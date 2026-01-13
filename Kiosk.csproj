@@ -1,0 +1,93 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>false</UseWindowsForms>
+    <LangVersion>10.0</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>Kiosk</AssemblyName>
+    <RootNamespace>Kiosk</RootNamespace>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <PlatformTarget>x64</PlatformTarget>
+    <NeutralLanguage>ru</NeutralLanguage>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Icon_32_32.png" />
+    <None Remove="Images\AIhelper.png" />
+    <None Remove="Images\calendar_emoji.png" />
+    <None Remove="Images\Logo.png" />
+    <None Remove="Images\map_emoji.png" />
+    <None Remove="Images\News.png" />
+    <None Remove="Images\newsVK.png" />
+    <None Remove="Images\qrcode1.png" />
+    <None Remove="Images\qrcode2.png" />
+    <None Remove="Images\question_emoji.png" />
+    <None Remove="Images\refresh_emoji.png" />
+    <None Remove="Images\ring.png" />
+    <None Remove="Images\settings_emoji.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Icon_32_32.ico" />
+    <Resource Include="Icon_32_32.png" />
+    <Resource Include="Images\AIhelper.png">
+      <CustomToolNamespace>Copy if newer</CustomToolNamespace>
+    </Resource>
+    <Resource Include="Images\Logo.png">
+      <CustomToolNamespace>Copy always</CustomToolNamespace>
+    </Resource>
+    <Resource Include="Images\map_emoji.png">
+      <CustomToolNamespace>Copy always</CustomToolNamespace>
+    </Resource>
+    <Resource Include="Images\newsVK.png">
+      <CustomToolNamespace>Copy always</CustomToolNamespace>
+    </Resource>
+    <Resource Include="Images\qrcode1.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\qrcode2.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\question_emoji.png">
+      <CustomToolNamespace>Copy always</CustomToolNamespace>
+    </Resource>
+    <Resource Include="Images\refresh_emoji.png">
+      <CustomToolNamespace>Copy always</CustomToolNamespace>
+    </Resource>
+    <Resource Include="Images\ring.png">
+      <CustomToolNamespace>Copy if newer</CustomToolNamespace>
+    </Resource>
+    <Resource Include="Images\settings_emoji.png">
+      <CustomToolNamespace>Copy always</CustomToolNamespace>
+    </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Emoji.Wpf" Version="0.3.4" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3595.46" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	<PackageReference Include="DocumentFormat.OpenXml" Version="2.20.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Images\News.png">
+      <CustomToolNamespace>Copy always</CustomToolNamespace>
+    </None>
+  </ItemGroup>
+
+</Project>

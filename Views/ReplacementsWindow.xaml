@@ -1,0 +1,108 @@
+﻿<Window x:Class="Kiosk.Views.ReplacementsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Замены уроков" 
+        Height="700"
+        Width="1000"
+        WindowStartupLocation="CenterScreen"
+        Background="White"
+        KeyDown="Window_KeyDown">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#FFE78A3C" Padding="20">
+            <TextBlock Text="Замены уроков" 
+                       Foreground="White" 
+                       FontSize="28" 
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"/>
+        </Border>
+
+        <!-- Date and Class Selection -->
+        <Border Grid.Row="1" Background="#f8f9fa" BorderBrush="#dee2e6" BorderThickness="0,1" Padding="15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Class Selection -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Класс:" 
+                               FontSize="16" 
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Margin="0,0,10,0"/>
+                    <ComboBox x:Name="ClassComboBox" 
+                              Width="150" 
+                              FontSize="14" 
+                              MinHeight="40"
+                              Padding="10,5"
+                              SelectionChanged="ClassComboBox_SelectionChanged" />
+                </StackPanel>
+
+                <!-- Date Info -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock x:Name="DateText" 
+                               Text="Замены на 23.10.2025"
+                               Foreground="#2c3e50"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Navigation -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button x:Name="BackButton" 
+                            Content="← На главную" 
+                            Background="Transparent"
+                            BorderThickness="0"
+                            FontSize="14"
+                            MinWidth="120"
+                            MinHeight="40"
+                            Padding="15,10"
+                            Click="BackButton_Click" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Replacements Content -->
+        <ScrollViewer Grid.Row="2" 
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      PanningMode="VerticalOnly"
+                      Padding="20">
+            <StackPanel x:Name="ReplacementsContainer">
+                <!-- Content will be generated in code -->
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- No Replacements Message -->
+        <TextBlock Grid.Row="2"
+                   x:Name="NoReplacementsText"
+                   Text="На сегодня замен нет"
+                   FontSize="18"
+                   Foreground="#95a5a6"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Visibility="Collapsed"/>
+
+        <!-- Status Bar -->
+        <StatusBar Grid.Row="3" Background="#f8f9fa">
+            <StatusBarItem>
+                <TextBlock x:Name="StatusText" Text="Готово" FontSize="12" Foreground="#6c757d"/>
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right">
+                <TextBlock Text="F11 - полноэкранный режим • ESC - выход" FontSize="12" Foreground="#6c757d"/>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>

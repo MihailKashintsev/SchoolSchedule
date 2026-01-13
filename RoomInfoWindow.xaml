@@ -1,0 +1,74 @@
+﻿<Window x:Class="Kiosk.RoomInfoWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Информация о кабинете" 
+        Height="500" 
+        Width="600"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="#2c3e50">
+
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Margin" Value="0,5,0,5" />
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#34495e" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Padding" Value="20,10" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#4a6572" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Заголовок -->
+        <TextBlock x:Name="TitleText" 
+                   Grid.Row="0" 
+                   FontSize="24" 
+                   FontWeight="Bold" 
+                   HorizontalAlignment="Center" 
+                   Margin="0,0,0,20" />
+
+        <!-- Информация -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock x:Name="RoomNumberText" FontSize="20" FontWeight="SemiBold" />
+                <TextBlock x:Name="RoomNameText" FontWeight="SemiBold" Foreground="#3498db" />
+                <TextBlock x:Name="FloorText" />
+                <TextBlock x:Name="PurposeText" />
+                <TextBlock x:Name="DescriptionText" TextWrapping="Wrap" />
+                <TextBlock x:Name="TeacherText" />
+                <TextBlock x:Name="ResponsibleText" />
+                <TextBlock x:Name="PhoneText" />
+                <TextBlock x:Name="HoursText" />
+                <TextBlock x:Name="ScheduleText" />
+                <TextBlock x:Name="CurrentLessonText" FontWeight="SemiBold" Foreground="#e74c3c" />
+                <TextBlock x:Name="AdditionalInfoText" TextWrapping="Wrap" FontStyle="Italic" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Кнопка закрытия -->
+        <Button Grid.Row="2" 
+                Content="Закрыть" 
+                Click="CloseButton_Click" 
+                HorizontalAlignment="Center" 
+                Margin="0,20,0,0" 
+                Width="120" />
+    </Grid>
+</Window>
