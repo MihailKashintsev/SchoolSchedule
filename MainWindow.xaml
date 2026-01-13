@@ -7,6 +7,130 @@
         Background="White"
         KeyDown="Window_KeyDown">
 
+    <Window.Resources>
+        <!-- Ресурсы для теней -->
+        <DropShadowEffect x:Key="ShadowLight"
+                          BlurRadius="15"
+                          ShadowDepth="3"
+                          Opacity="0.15"
+                          Color="Black"/>
+
+        <DropShadowEffect x:Key="ShadowMedium"
+                          BlurRadius="20"
+                          ShadowDepth="5"
+                          Opacity="0.2"
+                          Color="Black"/>
+
+        <DropShadowEffect x:Key="ShadowStrong"
+                          BlurRadius="25"
+                          ShadowDepth="8"
+                          Opacity="0.25"
+                          Color="Black"/>
+
+        <DropShadowEffect x:Key="ShadowButton"
+                          BlurRadius="12"
+                          ShadowDepth="3"
+                          Opacity="0.2"
+                          Color="Black"/>
+
+        <DropShadowEffect x:Key="ShadowButtonHover"
+                          BlurRadius="20"
+                          ShadowDepth="6"
+                          Opacity="0.3"
+                          Color="Black"/>
+
+        <!-- Стили для текста -->
+        <Style x:Key="Heading1" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#2c5f9e"/>
+        </Style>
+
+        <Style x:Key="Heading2" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#2c5f9e"/>
+        </Style>
+
+        <Style x:Key="BodyText" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+        </Style>
+
+        <Style x:Key="CaptionText" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="Light"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#6c757d"/>
+        </Style>
+
+        <!-- Общий стиль для кнопок -->
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}" 
+                                CornerRadius="10"
+                                Effect="{StaticResource ShadowButton}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"
+                                              Margin="20,15"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Effect" Value="{StaticResource ShadowButtonHover}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Effect" Value="{StaticResource ShadowLight}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Упрощенный стиль для кнопки Новости (без анимации масштаба) -->
+        <Style x:Key="NewsButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="#FF0004FF" 
+                                CornerRadius="10"
+                                Effect="{StaticResource ShadowButton}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"
+                                              Margin="20,15"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Effect" Value="{StaticResource ShadowButtonHover}"/>
+                                <Setter TargetName="border" Property="Background" Value="#0000CC"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Effect" Value="{StaticResource ShadowLight}"/>
+                                <Setter TargetName="border" Property="Background" Value="#000099"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
@@ -22,14 +146,17 @@
             </Grid.RowDefinitions>
 
             <!-- Шапка с иконкой настроек -->
-            <Border Grid.Row="0" Background="#2c5f9e" Padding="20">
+            <Border Grid.Row="0" Background="#2c5f9e" Padding="20" Effect="{StaticResource ShadowMedium}">
                 <Grid>
                     <TextBlock Text="Школьный информационный киоск" 
                                Foreground="White" 
-                               FontSize="24" 
+                               FontSize="26" 
                                FontWeight="Bold"
+                               FontFamily="Segoe UI"
                                HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
+                               VerticalAlignment="Center"
+                               TextOptions.TextRenderingMode="ClearType"
+                               TextOptions.TextFormattingMode="Display"/>
 
                     <!-- Иконка настроек в правом верхнем углу -->
                     <Button x:Name="SettingsButton"
@@ -41,392 +168,365 @@
                             BorderThickness="0"
                             Click="SettingsButton_Click"
                             ToolTip="Настройки">
-                        <Image Source="/Images/settings_emoji.png" 
-                               Width="24" 
-                               Height="24"/>
+                        <Border Background="White" 
+                                CornerRadius="8"
+                                Padding="8"
+                                Effect="{StaticResource ShadowLight}">
+                            <Image Source="/Images/settings_emoji.png" 
+                                   Width="20" 
+                                   Height="20"/>
+                        </Border>
                     </Button>
                 </Grid>
             </Border>
 
             <!-- Основной контент -->
-            <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Width="600">
-                <!-- Иконка -->
-                <Viewbox Width="80" Height="80" Margin="0,0,0,20" HorizontalAlignment="Center">
-                    <Canvas Width="24" Height="24">
-                        <Image Source="/Images/AIhelper.png" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                    </Canvas>
-                </Viewbox>
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="20">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="600">
+                    <!-- Иконка -->
+                    <Viewbox Width="100" Height="100" Margin="0,0,0,20" HorizontalAlignment="Center">
+                        <Border Background="#2c5f9e" 
+                                CornerRadius="20" 
+                                Padding="20"
+                                Effect="{StaticResource ShadowMedium}">
+                            <Image Source="/Images/AIhelper.png" 
+                                   Width="32" 
+                                   Height="32" 
+                                   VerticalAlignment="Center"/>
+                        </Border>
+                    </Viewbox>
 
-                <!-- Информация о школе -->
-                <Border Background="White" 
-                        CornerRadius="15" 
-                        Margin="20,10"
-                        BorderThickness="1"
-                        BorderBrush="#dee2e6">
-                    <StackPanel Margin="40,30">
-                        <TextBlock Text="Муниципальное бюджетное общеобразовательное учреждение"
-                                   Foreground="#495057"
-                                   FontSize="18"
-                                   FontWeight="Medium"
-                                   TextAlignment="Center"
-                                   Margin="0,0,0,8"/>
+                    <!-- Информация о школе -->
+                    <Border Background="White" 
+                            CornerRadius="15" 
+                            Margin="20,10"
+                            BorderThickness="1"
+                            BorderBrush="#dee2e6"
+                            Effect="{StaticResource ShadowMedium}">
+                        <StackPanel Margin="40,30">
+                            <TextBlock Text="Муниципальное бюджетное общеобразовательное учреждение"
+                                       Foreground="#495057"
+                                       FontSize="18"
+                                       FontWeight="Medium"
+                                       FontFamily="Segoe UI"
+                                       TextAlignment="Center"
+                                       Margin="0,0,0,8"
+                                       TextOptions.TextRenderingMode="ClearType"/>
 
-                        <TextBlock
-                                   Foreground="#2c5f9e"
-                                   FontSize="22"
-                                   FontWeight="Bold"
-                                   TextAlignment="Center"
-                                   Margin="0,0,0,8">
-                            <Run Text="Средняя общеобразовательная школа "/>
-                            <LineBreak/>
-                            <Run Text="«Лига первых»"/>
-                        </TextBlock>
+                            <TextBlock Foreground="#2c5f9e"
+                                       FontSize="24"
+                                       FontWeight="Bold"
+                                       FontFamily="Segoe UI"
+                                       TextAlignment="Center"
+                                       Margin="0,0,0,8"
+                                       TextOptions.TextFormattingMode="Display">
+                                <Run Text="Средняя общеобразовательная школа"/>
+                                <LineBreak/>
+                                <Run Text="«Лига первых»" FontWeight="Black"/>
+                            </TextBlock>
 
-                        <TextBlock Text="г. Химки"
-                                   Foreground="#6c757d"
-                                   FontSize="16"
-                                   FontWeight="Normal"
-                                   TextAlignment="Center"/>
-                    </StackPanel>
-                </Border>
+                            <TextBlock Text="г. Химки"
+                                       Foreground="#6c757d"
+                                       FontSize="16"
+                                       FontWeight="Normal"
+                                       FontFamily="Segoe UI"
+                                       TextAlignment="Center"
+                                       Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </Border>
 
-                <!-- Дата и время -->
-                <StackPanel Margin="40,25">
-                    <TextBlock x:Name="TimeText" 
-                               Text="00:00:00"
-                               Foreground="Black"
-                               FontSize="36"
-                               FontWeight="Bold"
-                               HorizontalAlignment="Center"
-                               Margin="0,0,0,5"/>
+                    <!-- Дата и время -->
+                    <Border Background="White"
+                            CornerRadius="12"
+                            Margin="40,25"
+                            Padding="20"
+                            Effect="{StaticResource ShadowLight}">
+                        <StackPanel>
+                            <TextBlock x:Name="TimeText" 
+                                       Text="00:00:00"
+                                       Foreground="#2c5f9e"
+                                       FontSize="40"
+                                       FontWeight="Bold"
+                                       FontFamily="Segoe UI"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,5"
+                                       TextOptions.TextFormattingMode="Display"/>
 
-                    <TextBlock x:Name="DateText" 
-                               Text="понедельник, 1 января 2024"
-                               Foreground="#FF757575"
-                               FontSize="20"
-                               FontWeight="Normal"
-                               HorizontalAlignment="Center"
-                               Opacity="0.9"/>
+                            <TextBlock x:Name="DateText" 
+                                       Text="понедельник, 1 января 2024"
+                                       Foreground="#6c757d"
+                                       FontSize="20"
+                                       FontWeight="Medium"
+                                       FontFamily="Segoe UI"
+                                       HorizontalAlignment="Center"
+                                       Opacity="0.9"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Кнопки навигации -->
+                    <Grid Margin="20,30">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Первая строка -->
+                        <Button x:Name="ScheduleButton"
+                                Grid.Row="0" Grid.Column="0"
+                                Background="#2c5f9e"
+                                Margin="10,10"
+                                MinWidth="180"
+                                Height="65"
+                                Click="ScheduleButton_Click"
+                                Style="{StaticResource ModernButton}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border Background="White" 
+                                        CornerRadius="6" 
+                                        Padding="4"
+                                        Margin="0,0,10,0">
+                                    <Image Source="/Images/ring.png" 
+                                           Width="20" 
+                                           Height="20"/>
+                                </Border>
+                                <TextBlock Text="Расписание" 
+                                           VerticalAlignment="Center"
+                                           FontSize="18"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="ReplacementsButton"
+                                Grid.Row="0" Grid.Column="1"
+                                Background="#e67e22"
+                                Margin="10,10"
+                                MinWidth="180"
+                                Height="65"
+                                Click="ReplacementsButton_Click"
+                                Style="{StaticResource ModernButton}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border Background="White" 
+                                        CornerRadius="6" 
+                                        Padding="4"
+                                        Margin="0,0,10,0">
+                                    <Image Source="/Images/refresh_emoji.png" 
+                                           Width="20" 
+                                           Height="20"/>
+                                </Border>
+                                <TextBlock Text="Замены" 
+                                           VerticalAlignment="Center"
+                                           FontSize="18"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Вторая строка -->
+                        <Button x:Name="AboutButton"
+                                Grid.Row="1" Grid.Column="0"
+                                Background="#9b59b6"
+                                Margin="10,10"
+                                MinWidth="180"
+                                Height="65"
+                                Click="AboutButton_Click"
+                                Style="{StaticResource ModernButton}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border Background="White" 
+                                        CornerRadius="6" 
+                                        Padding="4"
+                                        Margin="0,0,10,0">
+                                    <Image Source="/Images/Logo.png" 
+                                           Width="20" 
+                                           Height="20"/>
+                                </Border>
+                                <TextBlock Text="О проекте" 
+                                           VerticalAlignment="Center"
+                                           FontSize="18"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="MapButton"
+                                Grid.Row="1" Grid.Column="1"
+                                Background="#27ae60"
+                                Margin="10,10"
+                                MinWidth="180"
+                                Height="65"
+                                Click="MapButton_Click"
+                                Style="{StaticResource ModernButton}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border Background="White" 
+                                        CornerRadius="6" 
+                                        Padding="4"
+                                        Margin="0,0,10,0">
+                                    <Image Source="/Images/map_emoji.png" 
+                                           Width="20" 
+                                           Height="20"/>
+                                </Border>
+                                <TextBlock Text="Карта здания" 
+                                           VerticalAlignment="Center"
+                                           FontSize="18"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Третья строка - кнопка "Новости" на всю ширину -->
+                        <Button x:Name="News"
+                                Grid.Row="2" 
+                                Grid.Column="0"
+                                Grid.ColumnSpan="2"
+                                Margin="10,15"
+                                Height="70"
+                                Click="NewsButton_Click"
+                                Style="{StaticResource NewsButtonStyle}">
+                            <StackPanel Orientation="Horizontal" 
+                                        VerticalAlignment="Center" 
+                                        HorizontalAlignment="Center">
+                                <Border Background="White" 
+                                        CornerRadius="6" 
+                                        Padding="4"
+                                        Margin="0,0,15,0">
+                                    <Image Source="/Images/newsVK.png" 
+                                           Width="22" 
+                                           Height="22"/>
+                                </Border>
+                                <TextBlock Text="Новости" 
+                                           VerticalAlignment="Center"
+                                           FontSize="20"
+                                           FontWeight="Bold"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
                 </StackPanel>
-
-                <!-- Кнопки навигации - 2 строки по 2 кнопки + одна на всю ширину -->
-                <Grid Margin="20">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- Первая строка -->
-                    <Button x:Name="ScheduleButton"
-                            Grid.Row="0" Grid.Column="0"
-                            Background="#2c5f9e"
-                            Foreground="White"
-                            FontSize="18"
-                            FontWeight="SemiBold"
-                            Margin="10"
-                            BorderThickness="0"
-                            MinWidth="180"
-                            Height="60"
-                            Click="ScheduleButton_Click">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Image Source="/Images/ring.png" 
-                                   Width="24" 
-                                   Height="24" 
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,8,0"/>
-                            <TextBlock Text="Расписание" 
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" 
-                                                    CornerRadius="10">
-                                                <ContentPresenter HorizontalAlignment="Center" 
-                                                                  VerticalAlignment="Center"
-                                                                  Margin="20,15"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#1e4a7a"/>
-                                    </Trigger>
-                                    <Trigger Property="IsPressed" Value="True">
-                                        <Setter Property="Background" Value="#15395c"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-
-                    <Button x:Name="ReplacementsButton"
-                            Grid.Row="0" Grid.Column="1"
-                            Background="#e67e22"
-                            Foreground="White"
-                            FontSize="18"
-                            FontWeight="SemiBold"
-                            Margin="10"
-                            BorderThickness="0"
-                            MinWidth="180"
-                            Height="60"
-                            Click="ReplacementsButton_Click">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Image Source="/Images/refresh_emoji.png" 
-                                   Width="24" 
-                                   Height="24" 
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,8,0"/>
-                            <TextBlock Text="Замены" 
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" 
-                                                    CornerRadius="10">
-                                                <ContentPresenter HorizontalAlignment="Center" 
-                                                                  VerticalAlignment="Center"
-                                                                  Margin="20,15"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#d35400"/>
-                                    </Trigger>
-                                    <Trigger Property="IsPressed" Value="True">
-                                        <Setter Property="Background" Value="#ba4a00"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-
-                    <!-- Вторая строка -->
-                    <Button x:Name="AboutButton"
-                            Grid.Row="1" Grid.Column="0"
-                            Background="#9b59b6"
-                            Foreground="White"
-                            FontSize="18"
-                            FontWeight="SemiBold"
-                            Margin="10"
-                            BorderThickness="0"
-                            MinWidth="180"
-                            Height="60"
-                            Click="AboutButton_Click">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Image Source="/Images/Logo.png" 
-                                   Width="24" 
-                                   Height="24" 
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,8,0"/>
-                            <TextBlock Text="О проекте" 
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" 
-                                                    CornerRadius="10">
-                                                <ContentPresenter HorizontalAlignment="Center" 
-                                                                  VerticalAlignment="Center"
-                                                                  Margin="20,15"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#8e44ad"/>
-                                    </Trigger>
-                                    <Trigger Property="IsPressed" Value="True">
-                                        <Setter Property="Background" Value="#7d3c98"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-
-                    <Button x:Name="MapButton"
-                            Grid.Row="1" Grid.Column="1"
-                            Background="#27ae60"
-                            Foreground="White"
-                            FontSize="18"
-                            Margin="10"
-                            BorderThickness="0"
-                            MinWidth="180"
-                            Height="60"
-                            Click="MapButton_Click"
-                            FontWeight="SemiBold">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Image Source="/Images/map_emoji.png" 
-                                   Width="24" 
-                                   Height="24" 
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,8,0"/>
-                            <TextBlock Text="Карта здания" 
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" 
-                                                    CornerRadius="10">
-                                                <ContentPresenter HorizontalAlignment="Center" 
-                                                                  VerticalAlignment="Center"
-                                                                  Margin="20,15"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#219652"/>
-                                    </Trigger>
-                                    <Trigger Property="IsPressed" Value="True">
-                                        <Setter Property="Background" Value="#1c7e45"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-
-                    <!-- Третья строка - кнопка "Новости" на всю ширину -->
-                    <Button x:Name="News"
-                            Grid.Row="2" 
-                            Grid.Column="0"
-                            Grid.ColumnSpan="2"
-                            Background="#FF0004FF"
-                            Foreground="White"
-                            FontSize="18"
-                            Margin="10"
-                            BorderThickness="0"
-                            Height="60"
-                            Click="NewsButton_Click"
-                            FontWeight="SemiBold">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <Image Source="/Images/newsVK.png" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <TextBlock Text="Новости" 
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" 
-                                                    CornerRadius="10">
-                                                <ContentPresenter HorizontalAlignment="Center" 
-                                                                  VerticalAlignment="Center"
-                                                                  Margin="20,15"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#0000CC"/>
-                                    </Trigger>
-                                    <Trigger Property="IsPressed" Value="True">
-                                        <Setter Property="Background" Value="#000099"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-                </Grid>
-            </StackPanel>
+            </ScrollViewer>
 
             <!-- Статус бар -->
             <Border Grid.Row="2" 
                     VerticalAlignment="Bottom" 
                     Background="#f8f9fa" 
                     BorderThickness="1,1,0,0"
-                    BorderBrush="#dee2e6">
+                    BorderBrush="#dee2e6"
+                    Effect="{StaticResource ShadowLight}">
                 <TextBlock x:Name="StatusText" 
                            Text="Готов к работе • F11 - полноэкранный режим"
                            Foreground="#6c757d"
                            FontSize="14"
+                           FontFamily="Segoe UI"
                            HorizontalAlignment="Center"
-                           Margin="15,10"/>
+                           Margin="15,12"/>
             </Border>
         </Grid>
 
-        <!-- Правая часть - ИИ помощник (остается без изменений) -->
-        <Border Grid.Column="1" Background="#2c3e50" BorderBrush="#34495e" BorderThickness="1,0,0,0">
+        <!-- Правая часть - ИИ помощник -->
+        <Border Grid.Column="1" 
+                Background="#2c3e50" 
+                BorderBrush="#34495e" 
+                BorderThickness="1,0,0,0"
+                Effect="{StaticResource ShadowMedium}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition/>
-                    <RowDefinition Height="0"/>
-                    <RowDefinition Height="36"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <!-- Заголовок помощника -->
-                <Border Grid.Row="0" Background="#34495e" Padding="15">
+                <Border Grid.Row="0" 
+                        Background="#34495e"
+                        Padding="15"
+                        Effect="{StaticResource ShadowLight}">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Image Source="/Images/AIhelper.png" 
-                               Width="20" 
-                               Height="20" 
-                               VerticalAlignment="Center"
-                               Margin="0,0,10,0"/>
+                        <Border Background="#2c5f9e" 
+                                CornerRadius="8" 
+                                Padding="6"
+                                Margin="0,0,12,0">
+                            <Image Source="/Images/AIhelper.png" 
+                                   Width="20" 
+                                   Height="20" 
+                                   VerticalAlignment="Center"/>
+                        </Border>
                         <TextBlock Text="Школьный помощник" 
                                    Foreground="White" 
                                    FontSize="18" 
-                                   FontWeight="Bold"/>
+                                   FontWeight="Bold"
+                                   FontFamily="Segoe UI"/>
                     </StackPanel>
                 </Border>
 
                 <!-- Выбор класса -->
-                <Border Grid.Row="1" Background="#1a252f" Padding="15">
+                <Border Grid.Row="1" 
+                        Background="#1a252f" 
+                        Padding="15"
+                        Effect="{StaticResource ShadowLight}">
                     <StackPanel>
                         <TextBlock Text="Выберите класс:" 
                                    Foreground="#ecf0f1" 
                                    FontSize="14"
                                    FontWeight="SemiBold"
+                                   FontFamily="Segoe UI"
                                    Margin="0,0,0,8"/>
-                        <ComboBox x:Name="AIClassComboBox" 
-                                  FontSize="14"
-                                  Background="White"
-                                  SelectionChanged="AIClassComboBox_SelectionChanged"/>
+                        <Border Background="White" 
+                                CornerRadius="10"
+                                Effect="{StaticResource ShadowLight}"
+                                Padding="3">
+                            <ComboBox x:Name="AIClassComboBox" 
+                                      FontSize="14"
+                                      FontFamily="Segoe UI"
+                                      Background="White"
+                                      Padding="3"
+                                      BorderThickness="0"
+                                      SelectionChanged="AIClassComboBox_SelectionChanged">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" 
+                                                   FontFamily="Segoe UI"
+                                                   Padding="4"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </Border>
                     </StackPanel>
                 </Border>
 
                 <!-- Информация от ИИ -->
-                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="15">
-                    <StackPanel x:Name="AIContentPanel">
-                        <!-- Контент будет добавляться динамически -->
-                    </StackPanel>
-                </ScrollViewer>
+                <Border Grid.Row="2" 
+                        Margin="10" 
+                        CornerRadius="8"
+                        Background="#1a252f"
+                        Effect="{StaticResource ShadowLight}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="15">
+                        <StackPanel x:Name="AIContentPanel">
+                            <!-- Контент будет добавляться динамически -->
+                            <TextBlock Text="Выберите класс, чтобы увидеть информацию"
+                                       Foreground="#bdc3c7"
+                                       FontSize="14"
+                                       FontFamily="Segoe UI"
+                                       TextAlignment="Center"
+                                       Margin="0,20"
+                                       FontStyle="Italic"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
 
                 <!-- Подсказка -->
-                <Border Grid.Row="3" Background="#34495e" Padding="10" Grid.RowSpan="2">
+                <Border Grid.Row="2" 
+                        Background="#34495e" 
+                        Padding="12"
+                        Effect="{StaticResource ShadowLight}" Margin="-2,813,0,0" Grid.RowSpan="2">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Image Source="/Images/question_emoji.png" 
-                               Width="16" 
-                               Height="16" 
-                               VerticalAlignment="Center"
-                               Margin="0,0,5,0"/>
+                        <Border Background="#2c5f9e" 
+                                CornerRadius="4" 
+                                Padding="3"
+                                Margin="0,0,8,0">
+                            <Image Source="/Images/question_emoji.png" 
+                                   Width="17" 
+                                   Height="14" 
+                                   VerticalAlignment="Top"/>
+                        </Border>
                         <TextBlock Text="Выберите класс сверху для получения информации"
                                    Foreground="#bdc3c7"
-                                   FontSize="12"/>
+                                   FontSize="12"
+                                   FontFamily="Segoe UI"/>
                     </StackPanel>
                 </Border>
             </Grid>
