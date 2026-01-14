@@ -39,6 +39,42 @@
                           Opacity="0.3"
                           Color="Black"/>
 
+        <!-- Градиенты для правой панели -->
+        <LinearGradientBrush x:Key="AssistantHeaderGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#2c3e50" Offset="0"/>
+            <GradientStop Color="#34495e" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="AssistantPanelGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#1a252f" Offset="0"/>
+            <GradientStop Color="#2c3e50" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="AssistantContentGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#ecf0f1" Offset="0"/>
+            <GradientStop Color="#bdc3c7" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="AssistantComboBoxGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="White" Offset="0"/>
+            <GradientStop Color="#ecf0f1" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="AssistantInfoCardGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#3498db" Offset="0"/>
+            <GradientStop Color="#2980b9" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="AssistantWarningGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#e74c3c" Offset="0"/>
+            <GradientStop Color="#c0392b" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="AssistantSuccessGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#2ecc71" Offset="0"/>
+            <GradientStop Color="#27ae60" Offset="1"/>
+        </LinearGradientBrush>
+
         <!-- Стили для текста -->
         <Style x:Key="Heading1" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI"/>
@@ -128,6 +164,75 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+        </Style>
+
+        <!-- Стиль для ComboBox в правой панели -->
+        <Style x:Key="AssistantComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="{StaticResource AssistantComboBoxGradient}"/>
+            <Setter Property="Foreground" Value="#2c3e50"/>
+            <Setter Property="BorderBrush" Value="#bdc3c7"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border x:Name="border"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="8"
+                                    SnapsToDevicePixels="True">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="20"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ContentPresenter Grid.Column="0"
+                                                      Margin="{TemplateBinding Padding}"
+                                                      VerticalAlignment="Center"/>
+                                    <Path Grid.Column="1"
+                                          Data="M0,0 L4,4 8,0 Z"
+                                          Fill="#2c3e50"
+                                          VerticalAlignment="Center"
+                                          HorizontalAlignment="Center"
+                                          Margin="0,0,5,0"/>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#3498db"/>
+                                <Setter TargetName="border" Property="Effect" Value="{StaticResource ShadowLight}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Стиль для карточек информации в помощнике -->
+        <Style x:Key="AssistantInfoCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource AssistantInfoCardGradient}"/>
+            <Setter Property="BorderBrush" Value="#2980b9"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+            <Setter Property="Padding" Value="15"/>
+            <Setter Property="Effect" Value="{StaticResource ShadowLight}"/>
+        </Style>
+
+        <Style x:Key="AssistantWarningCardStyle" TargetType="Border" BasedOn="{StaticResource AssistantInfoCardStyle}">
+            <Setter Property="Background" Value="{StaticResource AssistantWarningGradient}"/>
+            <Setter Property="BorderBrush" Value="#c0392b"/>
+        </Style>
+
+        <Style x:Key="AssistantSuccessCardStyle" TargetType="Border" BasedOn="{StaticResource AssistantInfoCardStyle}">
+            <Setter Property="Background" Value="{StaticResource AssistantSuccessGradient}"/>
+            <Setter Property="BorderBrush" Value="#27ae60"/>
         </Style>
     </Window.Resources>
 
@@ -416,71 +521,76 @@
             </Border>
         </Grid>
 
-        <!-- Правая часть - ИИ помощник -->
+        <!-- Правая часть - ИИ помощник с улучшенным дизайном -->
         <Border Grid.Column="1" 
-                Background="#2c3e50" 
-                BorderBrush="#34495e" 
-                BorderThickness="1,0,0,0"
-                Effect="{StaticResource ShadowMedium}">
+        Background="#1a252f" 
+        BorderBrush="#2c3e50" 
+        BorderThickness="1,0,0,0"
+        Effect="{StaticResource ShadowMedium}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition/>
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
                 <!-- Заголовок помощника -->
                 <Border Grid.Row="0" 
-                        Background="#34495e"
-                        Padding="15"
-                        Effect="{StaticResource ShadowLight}">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Border Background="#2c5f9e" 
-                                CornerRadius="8" 
-                                Padding="6"
-                                Margin="0,0,12,0">
-                            <Image Source="/Images/AIhelper.png" 
-                                   Width="20" 
-                                   Height="20" 
-                                   VerticalAlignment="Center"/>
-                        </Border>
-                        <TextBlock Text="Школьный помощник" 
-                                   Foreground="White" 
-                                   FontSize="18" 
-                                   FontWeight="Bold"
-                                   FontFamily="Segoe UI"/>
+                Background="#2c3e50"
+                Padding="20"
+                Effect="{StaticResource ShadowLight}">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        
+                        <StackPanel>
+                            <TextBlock Text="Школьный помощник" 
+                               Foreground="White" 
+                               FontSize="22" 
+                               FontWeight="Bold"
+                               FontFamily="Segoe UI"/>
+                            <TextBlock Text="ИИ-ассистент" 
+                               Foreground="#bdc3c7"
+                               FontSize="12"
+                               FontFamily="Segoe UI"
+                               HorizontalAlignment="Center"/>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 
                 <!-- Выбор класса -->
                 <Border Grid.Row="1" 
-                        Background="#1a252f" 
-                        Padding="15"
-                        Effect="{StaticResource ShadowLight}">
+                Background="#2c3e50" 
+                Padding="20"
+                Margin="0"
+                Effect="{StaticResource ShadowLight}">
                     <StackPanel>
-                        <TextBlock Text="Выберите класс:" 
-                                   Foreground="#ecf0f1" 
-                                   FontSize="14"
-                                   FontWeight="SemiBold"
-                                   FontFamily="Segoe UI"
-                                   Margin="0,0,0,8"/>
-                        <Border Background="White" 
-                                CornerRadius="10"
-                                Effect="{StaticResource ShadowLight}"
-                                Padding="3">
+                        <TextBlock Text="Выберите класс для информации:" 
+                           Foreground="#ecf0f1" 
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           FontFamily="Segoe UI"
+                           Margin="0,0,0,12"/>
+                        <Border Background="White"
+                        CornerRadius="8"
+                        Effect="{StaticResource ShadowLight}"
+                        Padding="2">
                             <ComboBox x:Name="AIClassComboBox" 
-                                      FontSize="14"
-                                      FontFamily="Segoe UI"
-                                      Background="White"
-                                      Padding="3"
-                                      BorderThickness="0"
-                                      SelectionChanged="AIClassComboBox_SelectionChanged">
+                              FontSize="14"
+                              FontFamily="Segoe UI"
+                              Background="Transparent"
+                              Foreground="#2c3e50"
+                              Padding="10,8"
+                              BorderThickness="0"
+                              SelectionChanged="AIClassComboBox_SelectionChanged">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding}" 
-                                                   FontFamily="Segoe UI"
-                                                   Padding="4"/>
+                                        <Border Background="White" 
+                                        Margin="1"
+                                        Padding="8,6">
+                                            <TextBlock Text="{Binding}" 
+                                               FontFamily="Segoe UI"
+                                               FontWeight="Medium"
+                                               Foreground="#2c3e50"/>
+                                        </Border>
                                     </DataTemplate>
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
@@ -490,44 +600,52 @@
 
                 <!-- Информация от ИИ -->
                 <Border Grid.Row="2" 
-                        Margin="10" 
-                        CornerRadius="8"
-                        Background="#1a252f"
-                        Effect="{StaticResource ShadowLight}">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="15">
-                        <StackPanel x:Name="AIContentPanel">
-                            <!-- Контент будет добавляться динамически -->
-                            <TextBlock Text="Выберите класс, чтобы увидеть информацию"
-                                       Foreground="#bdc3c7"
+                Margin="15" 
+                CornerRadius="10"
+                Background="#2c3e50"
+                Effect="{StaticResource ShadowMedium}"
+                BorderBrush="#34495e"
+                BorderThickness="1">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" 
+                          HorizontalScrollBarVisibility="Disabled"
+                          Padding="0">
+                        <StackPanel x:Name="AIContentPanel" Margin="15">
+                            <!-- Стартовое сообщение -->
+                            <Border Background="#34495e"
+                            CornerRadius="8"
+                            Padding="15"
+                            Margin="0,0,0,10"
+                            BorderBrush="#4a6572"
+                            BorderThickness="1"
+                            Effect="{StaticResource ShadowLight}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" 
+                                        Margin="0,0,0,10">
+                                        <Border Background="#3498db" 
+                                        CornerRadius="6" 
+                                        Padding="6"
+                                        Margin="0,0,10,0">
+                                            <Image Source="/Images/AIhelper.png" 
+                                           Width="18" 
+                                           Height="18"/>
+                                        </Border>
+                                        <TextBlock Text="Добро пожаловать!" 
+                                           Foreground="White"
+                                           FontSize="16"
+                                           FontWeight="Bold"/>
+                                    </StackPanel>
+                                    <TextBlock Text="Выберите класс выше, чтобы увидеть актуальную информацию о расписании, заменах и важных объявлениях для вашего класса."
+                                       Foreground="#ecf0f1"
                                        FontSize="14"
                                        FontFamily="Segoe UI"
-                                       TextAlignment="Center"
-                                       Margin="0,20"
-                                       FontStyle="Italic"/>
+                                       TextWrapping="Wrap"
+                                       LineHeight="20"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Здесь будет добавляться динамический контент -->
                         </StackPanel>
                     </ScrollViewer>
-                </Border>
-
-                <!-- Подсказка -->
-                <Border Grid.Row="2" 
-                        Background="#34495e" 
-                        Padding="12"
-                        Effect="{StaticResource ShadowLight}" Margin="-2,813,0,0" Grid.RowSpan="2">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Border Background="#2c5f9e" 
-                                CornerRadius="4" 
-                                Padding="3"
-                                Margin="0,0,8,0">
-                            <Image Source="/Images/question_emoji.png" 
-                                   Width="17" 
-                                   Height="14" 
-                                   VerticalAlignment="Top"/>
-                        </Border>
-                        <TextBlock Text="Выберите класс сверху для получения информации"
-                                   Foreground="#bdc3c7"
-                                   FontSize="12"
-                                   FontFamily="Segoe UI"/>
-                    </StackPanel>
                 </Border>
             </Grid>
         </Border>

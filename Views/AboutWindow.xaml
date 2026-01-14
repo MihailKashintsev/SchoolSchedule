@@ -8,6 +8,34 @@
         Background="White"
         KeyDown="Window_KeyDown">
 
+    <Window.Resources>
+        <!-- Градиенты -->
+        <LinearGradientBrush x:Key="HeaderGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#2c5f9e" Offset="0"/>
+            <GradientStop Color="#3a7bc8" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="ButtonGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#2c5f9e" Offset="0"/>
+            <GradientStop Color="#1e4a7e" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="ButtonHoverGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#3a7bc8" Offset="0"/>
+            <GradientStop Color="#2c5f9e" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="InfoCardGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#f8f9fa" Offset="0"/>
+            <GradientStop Color="#e9ecef" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="TechCardGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#e8f4fd" Offset="0"/>
+            <GradientStop Color="#d4e9fc" Offset="1"/>
+        </LinearGradientBrush>
+    </Window.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -15,17 +43,53 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
-        <Border Grid.Row="0" Background="#2c5f9e" Padding="20">
+        <!-- Header с градиентом -->
+        <Border Grid.Row="0" 
+                Background="{StaticResource HeaderGradient}" 
+                Padding="20"
+                Effect="{StaticResource DropShadowEffect}">
             <Button x:Name="BackButton" 
-                        Content="Назад" 
-                        Background="#2c5f9e"
-                        Foreground="White"
-                        FontSize="16"
-                        FontWeight="SemiBold"
-                        MinWidth="140"
-                        Padding="20,10"
-                        Click="BackButton_Click" Margin="0,0,-10,0" Height="43" VerticalAlignment="Center" HorizontalAlignment="Right" Width="140"/>
+                    Content="Назад" 
+                    Background="{StaticResource ButtonGradient}"
+                    Foreground="White"
+                    FontSize="16"
+                    FontWeight="SemiBold"
+                    MinWidth="140"
+                    Padding="20,10"
+                    Click="BackButton_Click" 
+                    Margin="0,0,-10,0" 
+                    Height="43" 
+                    VerticalAlignment="Center" 
+                    HorizontalAlignment="Right" 
+                    Width="140"
+                    BorderThickness="0"
+                    BorderBrush="#1e4a7e"
+                    Cursor="Hand">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter x:Name="contentPresenter"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource ButtonHoverGradient}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#3a7bc8"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1e4a7e"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
         </Border>
 
         <!-- Main Content - УЛУЧШЕННАЯ ПРОКРУТКА -->
@@ -37,11 +101,21 @@
             <StackPanel Margin="30" HorizontalAlignment="Center">
 
                 <!-- Project Icon -->
-                <Viewbox Width="100" Height="100" Margin="0,0,0,25" HorizontalAlignment="Center">
-                    <Canvas Width="24" Height="24">
-                        <Path Fill="#2c5f9e" Data="M12,3L1,9L12,15L21,10.09V17H23V9M5,13.18V17.18C5,17.18 8,16 12,16C16,16 19,17.18 19,17.18V13.18C19,13.18 16,14.5 12,14.5C8,14.5 5,13.18 5,13.18Z"/>
-                    </Canvas>
-                </Viewbox>
+                <Border Width="120" 
+                        Height="120" 
+                        Margin="0,0,0,30" 
+                        HorizontalAlignment="Center"
+                        CornerRadius="20"
+                        Background="White"
+                        BorderBrush="#e0e0e0"
+                        BorderThickness="1"
+                        Effect="{StaticResource DropShadowEffect}">
+                    <Viewbox>
+                        <Canvas Width="24" Height="24">
+                            <Path Fill="#2c5f9e" Data="M12,3L1,9L12,15L21,10.09V17H23V9M5,13.18V17.18C5,17.18 8,16 12,16C16,16 19,17.18 19,17.18V13.18C19,13.18 16,14.5 12,14.5C8,14.5 5,13.18 5,13.18Z"/>
+                        </Canvas>
+                    </Viewbox>
+                </Border>
 
                 <!-- Project Title -->
                 <TextBlock Text="Школьный информационный киоск" 
@@ -49,14 +123,23 @@
                            FontWeight="Bold"
                            Foreground="#2c5f9e"
                            HorizontalAlignment="Center"
-                           Margin="0,0,0,15"/>
+                           Margin="0,0,0,15"
+                           Effect="{StaticResource TextShadowEffect}"/>
 
                 <!-- Version -->
-                <TextBlock Text="Версия 1.0.0" 
-                           FontSize="18"
-                           Foreground="#6c757d"
-                           HorizontalAlignment="Center"
-                           Margin="0,0,0,25"/>
+                <Border Background="White"
+                        CornerRadius="15"
+                        Padding="15,8"
+                        Margin="0,0,0,30"
+                        BorderBrush="#e0e0e0"
+                        BorderThickness="1"
+                        Effect="{StaticResource DropShadowEffect}">
+                    <TextBlock Text="Версия 1.0.0" 
+                               FontSize="18"
+                               Foreground="#6c757d"
+                               HorizontalAlignment="Center"
+                               FontWeight="Medium"/>
+                </Border>
 
                 <!-- QR Codes Section -->
                 <TextBlock Text="Полезные ссылки" 
@@ -64,7 +147,8 @@
                            FontWeight="Bold"
                            Foreground="#2c5f9e"
                            HorizontalAlignment="Center"
-                           Margin="0,0,0,25"/>
+                           Margin="0,0,0,25"
+                           Effect="{StaticResource TextShadowEffect}"/>
 
                 <Grid Margin="0,0,0,40">
                     <Grid.ColumnDefinitions>
@@ -79,40 +163,52 @@
                         <Border Background="White" 
                                 BorderBrush="#dee2e6" 
                                 BorderThickness="1"
-                                CornerRadius="8"
-                                Padding="20">
+                                CornerRadius="12"
+                                Padding="25"
+                                Effect="{StaticResource CardShadowEffect}">
                             <StackPanel>
                                 <TextBlock Text="Сайт команды" 
                                            FontSize="18" 
                                            FontWeight="SemiBold"
                                            HorizontalAlignment="Center"
-                                           Margin="0,0,0,15"/>
+                                           Margin="0,0,0,20"
+                                           Foreground="#2c5f9e"/>
 
                                 <!-- QR Code 1 Image -->
-                                <Image x:Name="QrCode1Image"
-                                       Width="180" 
-                                       Height="180"
-                                       HorizontalAlignment="Center"
-                                       Stretch="Uniform"/>
+                                <Border Width="200" 
+                                        Height="200"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,0,0,20"
+                                        CornerRadius="8"
+                                        BorderBrush="#e0e0e0"
+                                        BorderThickness="1"
+                                        Background="White">
+                                    <Image x:Name="QrCode1Image"
+                                           Stretch="Uniform"/>
+                                </Border>
 
                                 <!-- Увеличиваем область для касания -->
-                                <Border Background="Transparent"
-                                        Padding="10,5"
+                                <Border Background="White"
+                                        Padding="12,8"
                                         MouseLeftButtonDown="QrCodeText_MouseLeftButtonDown"
-                                        Cursor="Hand">
+                                        Cursor="Hand"
+                                        CornerRadius="8"
+                                        BorderBrush="#2c5f9e"
+                                        BorderThickness="1"
+                                        Margin="0,0,0,5">
                                     <TextBlock x:Name="QrCode1Text"
                                                Text="https://team-website.com" 
                                                FontSize="14"
                                                Foreground="#2c5f9e"
                                                HorizontalAlignment="Center"
                                                TextWrapping="Wrap"
-                                               TextAlignment="Center"/>
+                                               TextAlignment="Center"
+                                               FontWeight="Medium"/>
                                 </Border>
                                 <TextBlock Text="(нажмите для копирования)" 
                                            FontSize="12"
                                            Foreground="#6c757d"
-                                           HorizontalAlignment="Center"
-                                           Margin="0,5,0,0"/>
+                                           HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -124,107 +220,149 @@
                         <Border Background="White" 
                                 BorderBrush="#dee2e6" 
                                 BorderThickness="1"
-                                CornerRadius="8"
-                                Padding="20">
+                                CornerRadius="12"
+                                Padding="25"
+                                Effect="{StaticResource CardShadowEffect}">
                             <StackPanel>
                                 <TextBlock Text="Сайт школы" 
                                            FontSize="18" 
                                            FontWeight="SemiBold"
                                            HorizontalAlignment="Center"
-                                           Margin="0,0,0,15"/>
+                                           Margin="0,0,0,20"
+                                           Foreground="#2c5f9e"/>
 
                                 <!-- QR Code 2 Image -->
-                                <Image x:Name="QrCode2Image"
-                                       Width="180" 
-                                       Height="180"
-                                       HorizontalAlignment="Center"
-                                       Stretch="Uniform"/>
+                                <Border Width="200" 
+                                        Height="200"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,0,0,20"
+                                        CornerRadius="8"
+                                        BorderBrush="#e0e0e0"
+                                        BorderThickness="1"
+                                        Background="White">
+                                    <Image x:Name="QrCode2Image"
+                                           Stretch="Uniform"/>
+                                </Border>
 
                                 <!-- Увеличиваем область для касания -->
-                                <Border Background="Transparent"
-                                        Padding="10,5"
+                                <Border Background="White"
+                                        Padding="12,8"
                                         MouseLeftButtonDown="QrCodeText_MouseLeftButtonDown"
-                                        Cursor="Hand">
+                                        Cursor="Hand"
+                                        CornerRadius="8"
+                                        BorderBrush="#2c5f9e"
+                                        BorderThickness="1"
+                                        Margin="0,0,0,5">
                                     <TextBlock x:Name="QrCode2Text"
                                                Text="https://school-website.edu" 
                                                FontSize="14"
                                                Foreground="#2c5f9e"
                                                HorizontalAlignment="Center"
                                                TextWrapping="Wrap"
-                                               TextAlignment="Center"/>
+                                               TextAlignment="Center"
+                                               FontWeight="Medium"/>
                                 </Border>
                                 <TextBlock Text="(нажмите для копирования)" 
                                            FontSize="12"
                                            Foreground="#6c757d"
-                                           HorizontalAlignment="Center"
-                                           Margin="0,5,0,0"/>
+                                           HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
                 </Grid>
 
                 <!-- Developer Info -->
-                <Border Background="#f8f9fa" 
-                        CornerRadius="10" 
-                        Padding="25"
-                        Margin="0,0,0,25"
+                <Border Background="{StaticResource InfoCardGradient}" 
+                        CornerRadius="12" 
+                        Padding="30"
+                        Margin="0,0,0,30"
                         BorderBrush="#dee2e6"
-                        BorderThickness="1">
+                        BorderThickness="1"
+                        Effect="{StaticResource CardShadowEffect}">
                     <StackPanel>
                         <TextBlock Text="Информация о проекте" 
                                    FontSize="20" 
                                    FontWeight="Bold"
                                    Foreground="#2c5f9e"
-                                   Margin="0,0,0,20"/>
+                                   Margin="0,0,0,25"
+                                   Effect="{StaticResource TextShadowEffect}"/>
 
                         <TextBlock x:Name="DeveloperText"
                                    Text="Здесь будет информация о разработчиках проекта..."
                                    FontSize="16"
                                    Foreground="#495057"
                                    TextWrapping="Wrap"
-                                   LineHeight="24"/>
+                                   LineHeight="24"
+                                   Margin="0,0,0,15"/>
 
                         <Border Background="#e9ecef" 
-                                CornerRadius="5" 
+                                CornerRadius="8" 
                                 Padding="20,12"
-                                Margin="0,20,0,0">
+                                BorderBrush="#ced4da"
+                                BorderThickness="1">
                             <TextBlock Text="? Для связи: телеграмм: @RENDERGAMESRU" 
                                        FontSize="15"
-                                       Foreground="#6c757d"/>
+                                       Foreground="#6c757d"
+                                       FontWeight="Medium"/>
                         </Border>
                     </StackPanel>
                 </Border>
 
                 <!-- Additional Info -->
-                <Border Background="#e8f4fd" 
-                        CornerRadius="10" 
-                        Padding="25"
+                <Border Background="{StaticResource TechCardGradient}" 
+                        CornerRadius="12" 
+                        Padding="30"
                         BorderBrush="#b6d7f2"
-                        BorderThickness="1">
+                        BorderThickness="1"
+                        Effect="{StaticResource CardShadowEffect}">
                     <StackPanel>
                         <TextBlock Text="Техническая информация" 
                                    FontSize="18" 
                                    FontWeight="Bold"
                                    Foreground="#2c5f9e"
-                                   Margin="0,0,0,15"/>
+                                   Margin="0,0,0,20"
+                                   Effect="{StaticResource TextShadowEffect}"/>
 
                         <StackPanel>
-                            <TextBlock Text="• Платформа: .NET Framework 4.8" 
-                                       FontSize="15"
-                                       Foreground="#495057"
-                                       Margin="0,5,0,0"/>
-                            <TextBlock Text="• Технология: WPF" 
-                                       FontSize="15"
-                                       Foreground="#495057"
-                                       Margin="0,5,0,0"/>
-                            <TextBlock Text="• Совместимость: Windows 10/11" 
-                                       FontSize="15"
-                                       Foreground="#495057"
-                                       Margin="0,5,0,0"/>
-                            <TextBlock Text="• WebView2" 
-                                       FontSize="15"
-                                       Foreground="#495057"
-                                       Margin="0,5,0,0"/>
+                            <Border Background="White" 
+                                    CornerRadius="8" 
+                                    Padding="12,10"
+                                    Margin="0,0,0,8"
+                                    BorderBrush="#e0e0e0"
+                                    BorderThickness="1">
+                                <TextBlock Text="• Платформа: .NET Framework 4.8" 
+                                           FontSize="15"
+                                           Foreground="#495057"/>
+                            </Border>
+                            <Border Background="White" 
+                                    CornerRadius="8" 
+                                    Padding="12,10"
+                                    Margin="0,0,0,8"
+                                    BorderBrush="#e0e0e0"
+                                    BorderThickness="1">
+                                <TextBlock Text="• Технология: WPF" 
+                                           FontSize="15"
+                                           Foreground="#495057"/>
+                            </Border>
+                            <Border Background="White" 
+                                    CornerRadius="8" 
+                                    Padding="12,10"
+                                    Margin="0,0,0,8"
+                                    BorderBrush="#e0e0e0"
+                                    BorderThickness="1">
+                                <TextBlock Text="• Совместимость: Windows 10/11" 
+                                           FontSize="15"
+                                           Foreground="#495057"/>
+                            </Border>
+                            <Border Background="White" 
+                                    CornerRadius="8" 
+                                    Padding="12,10"
+                                    BorderBrush="#e0e0e0"
+                                    BorderThickness="1">
+                                <TextBlock Text="• WebView2" 
+                                           FontSize="15"
+                                           Foreground="#495057"/>
+                            </Border>
                         </StackPanel>
                     </StackPanel>
                 </Border>
