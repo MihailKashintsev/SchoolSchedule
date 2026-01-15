@@ -18,6 +18,7 @@ namespace Kiosk
             RefreshIntervalTextBox.Text = App.Settings.RefreshInterval.ToString();
             ShowKeyboardCheckBox.IsChecked = App.Settings.ShowKeyboardForPassword;
             ReplacementsPathTextBox.Text = App.Settings.ReplacementsFilePath;
+            
         }
 
         
