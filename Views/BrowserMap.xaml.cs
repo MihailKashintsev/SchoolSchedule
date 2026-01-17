@@ -8,7 +8,7 @@ namespace Kiosk.Views
 {
     public partial class BrowserMap : Window
     {
-        private const string DefaultNewsUrl = "http://ligapervihpheniks.tilda.ws/secretmapforkiosk1";
+        public string DefaultMapUrl = App.Settings.MapUrl;
         private DispatcherTimer _resetTimer;
         private bool _isButtonAdded = false;
 
@@ -34,7 +34,7 @@ namespace Kiosk.Views
                 webView.NavigationStarting += WebView_NavigationStarting;
 
                 // Загружаем начальную страницу
-                webView.Source = new System.Uri(DefaultNewsUrl);
+                webView.Source = new System.Uri(DefaultMapUrl);
 
                 // Настраиваем таймер сброса
                 InitializeResetTimer();
@@ -133,7 +133,7 @@ namespace Kiosk.Views
             if (webView != null && webView.CoreWebView2 != null)
             {
                 _isButtonAdded = false;
-                webView.CoreWebView2.Navigate(DefaultNewsUrl);
+                webView.CoreWebView2.Navigate(DefaultMapUrl);
             }
         }
 

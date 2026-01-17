@@ -43,9 +43,18 @@
                     </StackPanel>
                 </GroupBox>
 
-                <GroupBox Header="URL для баннера" Margin="0,0,0,15">
+                <GroupBox Header="Ссылка на сайт с картой" Margin="0,0,0,15">
                     <StackPanel>
-                        <TextBox x:Name="BannerURL"
+                        <TextBox x:Name="MapUrl"
+                 Margin="0,5"
+                 MinHeight="35"
+                 FontSize="14"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="Ссылка для новостей" Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBox x:Name="NewsUrl"
                  Margin="0,5"
                  MinHeight="35"
                  FontSize="14"/>

@@ -12,7 +12,7 @@ namespace Kiosk.Views
 {
     public partial class NewsBrowserWindow : Window
     {
-        private const string DefaultNewsUrl = "https://vk.com/school_liga_khimki";
+        public string DefaultNewsUrl = App.Settings.NewsUrl;
 
         // БЕЛЫЙ СПИСОК: только эти страницы разрешены
         private readonly HashSet<string> _allowedUrlPatterns = new HashSet<string>

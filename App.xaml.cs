@@ -33,7 +33,8 @@ namespace Kiosk
         public int RefreshInterval { get; set; } = 300;
         public string AdminPassword { get; set; } = "1234";
         public bool ShowKeyboardForPassword { get; set; } = true;
-        public string Bannerurl { get; set; } = "https://ligapervihpheniks.tilda.ws/baners";
+        public string MapUrl { get; set; } = "http://ligapervihpheniks.tilda.ws/secretmapforkiosk1";
+        public string NewsUrl { get; set; } = "https://vk.com/school_liga_khimki";
         public int IdleTimeBeforeBanner { get; set; } = 30; // секунды
 
         private static readonly string SettingsPath = "kiosk_settings.json";

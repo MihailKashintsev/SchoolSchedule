@@ -14,6 +14,8 @@ namespace Kiosk
         private void LoadSettings()
         {
             SchedulePathTextBox.Text = App.Settings.ScheduleFilePath;
+            MapUrl.Text = App.Settings.MapUrl;
+            NewsUrl.Text = App.Settings.NewsUrl;
             AutoRefreshCheckBox.IsChecked = App.Settings.AutoRefresh;
             RefreshIntervalTextBox.Text = App.Settings.RefreshInterval.ToString();
             ShowKeyboardCheckBox.IsChecked = App.Settings.ShowKeyboardForPassword;
@@ -69,6 +71,8 @@ namespace Kiosk
         private void SaveSettings()
         {
             App.Settings.ScheduleFilePath = SchedulePathTextBox.Text;
+            App.Settings.MapUrl = MapUrl.Text;
+            App.Settings.NewsUrl = NewsUrl.Text;
             App.Settings.ReplacementsFilePath = ReplacementsPathTextBox.Text;
             App.Settings.AutoRefresh = AutoRefreshCheckBox.IsChecked ?? true;
 
