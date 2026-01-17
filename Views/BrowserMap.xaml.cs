@@ -8,7 +8,7 @@ namespace Kiosk.Views
 {
     public partial class BrowserMap : Window
     {
-        private const string DefaultNewsUrl = "https://ligapervihpheniks.tilda.ws/secretmapforkiosk1";
+        private const string DefaultNewsUrl = "http://ligapervihpheniks.tilda.ws/secretmapforkiosk1";
         private DispatcherTimer _resetTimer;
         private bool _isButtonAdded = false;
 

@@ -386,6 +386,12 @@ namespace Kiosk
             newsWindow.Show();
         }
 
+        private void MapBrowserButton_Click(object sender, RoutedEventArgs e)
+        {
+            var mapWindow = new BrowserMap();
+            mapWindow.Show();
+        }
+
         // Остальные методы остаются без изменений
         private void ScheduleButton_Click(object sender, RoutedEventArgs e)
         {

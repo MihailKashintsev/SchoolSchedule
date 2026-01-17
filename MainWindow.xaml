@@ -451,13 +451,13 @@
                             </StackPanel>
                         </Button>
 
-                        <Button x:Name="MapButton"
+                        <Button x:Name="MapBrowserButton"
                                 Grid.Row="1" Grid.Column="1"
                                 Background="#27ae60"
                                 Margin="10,10"
                                 MinWidth="180"
                                 Height="65"
-                                Click="MapButton_Click"
+                                Click="MapBrowserButton_Click"
                                 Style="{StaticResource ModernButton}">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <Border Background="White" 
