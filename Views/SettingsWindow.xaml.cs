@@ -20,10 +20,42 @@ namespace Kiosk
             RefreshIntervalTextBox.Text = App.Settings.RefreshInterval.ToString();
             ShowKeyboardCheckBox.IsChecked = App.Settings.ShowKeyboardForPassword;
             ReplacementsPathTextBox.Text = App.Settings.ReplacementsFilePath;
-            
+
+            BannerPathsTextBox.Text = App.Settings.BannerImagePaths;
+            BannerTimeoutTextBox.Text = App.Settings.BannerTimeout.ToString();
+            BannerSwitchIntervalTextBox.Text = App.Settings.BannerSwitchInterval.ToString();
+            EnableBannersCheckBox.IsChecked = App.Settings.EnableBanners;
+
+            UpdateBannerControls();
         }
 
-        
+        private void UpdateBannerControls()
+        {
+            bool isEnabled = EnableBannersCheckBox.IsChecked ?? false;
+            BannerPathsTextBox.IsEnabled = isEnabled;
+            BannerTimeoutTextBox.IsEnabled = isEnabled;
+            BannerSwitchIntervalTextBox.IsEnabled = isEnabled;
+        }
+
+        private void EnableBannersCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            UpdateBannerControls();
+        }
+
+        private void BrowseBannerPaths_Click(object sender, RoutedEventArgs e)
+        {
+            var openFileDialog = new OpenFileDialog
+            {
+                Filter = "PNG files (*.png)|*.png|All files (*.*)|*.*",
+                Title = "Выберите файлы баннеров",
+                Multiselect = true
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                BannerPathsTextBox.Text = string.Join(";", openFileDialog.FileNames);
+            }
+        }
 
         private void BrowseReplacementsPath_Click(object sender, RoutedEventArgs e)
         {
@@ -62,6 +94,7 @@ namespace Kiosk
                 SchedulePathTextBox.Text = openFileDialog.FileName;
             }
         }
+
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;
@@ -82,6 +115,20 @@ namespace Kiosk
             }
 
             App.Settings.ShowKeyboardForPassword = ShowKeyboardCheckBox.IsChecked ?? true;
+
+            App.Settings.BannerImagePaths = BannerPathsTextBox.Text;
+
+            if (int.TryParse(BannerTimeoutTextBox.Text, out int timeout) && timeout > 0)
+            {
+                App.Settings.BannerTimeout = timeout;
+            }
+
+            if (int.TryParse(BannerSwitchIntervalTextBox.Text, out int switchInterval) && switchInterval > 0)
+            {
+                App.Settings.BannerSwitchInterval = switchInterval;
+            }
+
+            App.Settings.EnableBanners = EnableBannersCheckBox.IsChecked ?? true;
 
             App.SaveSettings();
         }

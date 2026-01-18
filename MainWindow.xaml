@@ -649,5 +649,44 @@
                 </Border>
             </Grid>
         </Border>
+
+        <!-- Режим баннеров -->
+        <Grid x:Name="BannerGrid" 
+              Grid.Column="0" 
+              Grid.ColumnSpan="2"
+              Visibility="Collapsed"
+              Background="Black">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Область для изображения -->
+            <Viewbox Grid.Row="0" Stretch="Uniform">
+                <Image x:Name="BannerImage" 
+                       Source="/Images/banner1.png"
+                       Stretch="Uniform"
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
+            </Viewbox>
+
+            <!-- Кнопка выхода -->
+            <Button Grid.Row="1"
+                    x:Name="ExitBannerButton"
+                    Content="Нажмите, чтобы выйти из режима баннеров"
+                    Background="#80000000"
+                    Foreground="White"
+                    FontSize="20"
+                    FontWeight="Bold"
+                    BorderThickness="0"
+                    Height="60"
+                    Margin="0,20"
+                    Click="ExitBannerButton_Click"
+                    Cursor="Hand">
+                <Button.Effect>
+                    <DropShadowEffect BlurRadius="10" Opacity="0.5" ShadowDepth="3"/>
+                </Button.Effect>
+            </Button>
+        </Grid>
     </Grid>
 </Window>

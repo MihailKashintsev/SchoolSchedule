@@ -2,12 +2,14 @@
 using Kiosk.Services;
 using Kiosk.Views;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
 namespace Kiosk
@@ -16,6 +18,8 @@ namespace Kiosk
     {
         private DispatcherTimer _timer;
         private DispatcherTimer _aiTimer;
+        private DispatcherTimer _idleTimer;
+        private DispatcherTimer _bannerTimer;
         private bool _isFullScreen = true;
         private ScheduleData _scheduleData;
         private ReplacementData _replacementData;
@@ -23,74 +27,194 @@ namespace Kiosk
         private readonly DocxReplacementService _replacementService = new();
         private readonly SchoolAssistantService _assistantService = new();
 
+        private List<string> _bannerImages = new();
+        private int _currentBannerIndex = 0;
+        private DateTime _lastUserActivity;
+        private bool _isBannerMode = false;
+
         public MainWindow()
         {
             InitializeComponent();
             InitializeTimers();
             UpdateDateTime();
             LoadData();
+            LoadBannerSettings();
 
-            // Set fullscreen mode
+            this.PreviewMouseMove += Window_PreviewMouseMove;
+            this.PreviewMouseDown += Window_PreviewMouseDown;
+            this.PreviewKeyDown += Window_PreviewKeyDown;
+
+            _lastUserActivity = DateTime.Now;
+
             WindowState = WindowState.Maximized;
             WindowStyle = WindowStyle.None;
         }
 
+        private void LoadBannerSettings()
+        {
+            if (App.Settings.EnableBanners && !string.IsNullOrEmpty(App.Settings.BannerImagePaths))
+            {
+                var paths = App.Settings.BannerImagePaths.Split(';')
+                    .Where(p => !string.IsNullOrWhiteSpace(p))
+                    .Select(p => p.Trim())
+                    .ToList();
+
+                _bannerImages.Clear();
+
+                foreach (var path in paths)
+                {
+                    if (File.Exists(path))
+                    {
+                        _bannerImages.Add(path);
+                    }
+                }
+
+                if (_bannerImages.Count > 0)
+                {
+                    _idleTimer.Interval = TimeSpan.FromSeconds(App.Settings.BannerTimeout);
+                    _bannerTimer.Interval = TimeSpan.FromSeconds(App.Settings.BannerSwitchInterval);
+                    _idleTimer.Start();
+                }
+            }
+        }
+
         private void InitializeTimers()
         {
-            // Таймер для обновления времени
             _timer = new DispatcherTimer();
             _timer.Interval = TimeSpan.FromSeconds(1);
             _timer.Tick += Timer_Tick;
             _timer.Start();
 
-            // Таймер для обновления информации от ИИ
             _aiTimer = new DispatcherTimer();
             _aiTimer.Interval = TimeSpan.FromSeconds(10);
             _aiTimer.Tick += AITimer_Tick;
             _aiTimer.Start();
+
+            _idleTimer = new DispatcherTimer();
+            _idleTimer.Tick += IdleTimer_Tick;
+
+            _bannerTimer = new DispatcherTimer();
+            _bannerTimer.Tick += BannerTimer_Tick;
         }
 
-        private async void LoadData()
+        private void ResetIdleTimer()
         {
+            if (_isBannerMode) return;
+
+            _lastUserActivity = DateTime.Now;
+            _idleTimer.Stop();
+
+            if (_bannerImages.Count > 0 && App.Settings.EnableBanners)
+            {
+                _idleTimer.Start();
+            }
+        }
+
+        private void IdleTimer_Tick(object sender, EventArgs e)
+        {
+            if ((DateTime.Now - _lastUserActivity).TotalSeconds >= App.Settings.BannerTimeout)
+            {
+                StartBannerMode();
+            }
+        }
+
+        private void BannerTimer_Tick(object sender, EventArgs e)
+        {
+            ShowNextBanner();
+        }
+
+        private void StartBannerMode()
+        {
+            if (_bannerImages.Count == 0 || _isBannerMode) return;
+
+            _isBannerMode = true;
+            _idleTimer.Stop();
+
+            BannerGrid.Visibility = Visibility.Visible;
+
+            _currentBannerIndex = 0;
+            ShowCurrentBanner();
+
+            _bannerTimer.Start();
+        }
+
+        private void ExitBannerMode()
+        {
+            if (!_isBannerMode) return;
+
+            _isBannerMode = false;
+            _bannerTimer.Stop();
+
+            BannerGrid.Visibility = Visibility.Collapsed;
+
+            ResetIdleTimer();
+        }
+
+        private void ShowCurrentBanner()
+        {
+            if (_currentBannerIndex < 0 || _currentBannerIndex >= _bannerImages.Count) return;
+
             try
             {
-                // Загружаем расписание
-                _scheduleData = await _scheduleService.LoadScheduleAsync(App.Settings.ScheduleFilePath);
-                UpdateClassComboBox();
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.UriSource = new Uri(_bannerImages[_currentBannerIndex], UriKind.RelativeOrAbsolute);
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.EndInit();
+                bitmap.Freeze();
 
-                // Загружаем замены
-                _replacementData = _replacementService.LoadReplacements(App.Settings.ReplacementsFilePath);
-
-                // Проверяем наличие замен
-                if (_replacementData != null && _replacementData.HasReplacements)
-                {
-                    StatusText.Text = $"Данные загружены ({_scheduleData.Schedules.Count} классов, есть замены)";
-                }
-                else
-                {
-                    StatusText.Text = $"Данные загружены ({_scheduleData.Schedules.Count} классов, замен нет)";
-                }
+                BannerImage.Source = bitmap;
             }
             catch (Exception ex)
             {
-                StatusText.Text = $"Ошибка загрузки данных: {ex.Message}";
+                Console.WriteLine($"Ошибка загрузки баннера: {ex.Message}");
             }
         }
 
-        private void UpdateClassComboBox()
+        private void ShowNextBanner()
         {
-            AIClassComboBox.Items.Clear();
+            if (_bannerImages.Count == 0) return;
 
-            if (_scheduleData?.Schedules != null && _scheduleData.Schedules.Any())
+            _currentBannerIndex = (_currentBannerIndex + 1) % _bannerImages.Count;
+            ShowCurrentBanner();
+        }
+
+        private void Window_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            if (_isBannerMode) return;
+            ResetIdleTimer();
+        }
+
+        private void Window_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (_isBannerMode) return;
+            ResetIdleTimer();
+        }
+
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (_isBannerMode)
             {
-                foreach (var schedule in _scheduleData.Schedules.OrderBy(s => s.ClassName))
-                {
-                    AIClassComboBox.Items.Add(schedule.ClassName);
-                }
-
-                if (AIClassComboBox.Items.Count > 0)
-                    AIClassComboBox.SelectedIndex = 0;
+                ExitBannerMode();
             }
+            else
+            {
+                ResetIdleTimer();
+
+                if (e.Key == Key.F11)
+                {
+                    ToggleFullScreen();
+                }
+                else if (e.Key == Key.Escape && _isFullScreen)
+                {
+                    ToggleFullScreen();
+                }
+            }
+        }
+
+        private void ExitBannerButton_Click(object sender, RoutedEventArgs e)
+        {
+            ExitBannerMode();
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -139,25 +263,20 @@ namespace Kiosk
         {
             AIContentPanel.Children.Clear();
 
-            // Заголовок с классом
             AddAITitle($"Информация для {className}");
 
-            // Текущее состояние
             AddCurrentState(info.CurrentState, currentTime);
 
-            // Замены
             if (info.ClassReplacements.Any())
             {
                 AddReplacementsInfo(info.ClassReplacements);
             }
 
-            // Следующий урок
             if (info.NextLesson != null)
             {
                 AddNextLessonInfo(info.NextLesson);
             }
 
-            // Расписание на сегодня - ВСЕ уроки
             if (info.TodayLessons.Any())
             {
                 AddTodaySchedule(info.TodayLessons);
@@ -259,7 +378,7 @@ namespace Kiosk
             };
             stackPanel.Children.Add(title);
 
-            foreach (var replacement in replacements) // Показываем ВСЕ замены
+            foreach (var replacement in replacements)
             {
                 var replacementText = $"{replacement.LessonNumber} урок: {replacement.ReplacementTeacher}";
                 if (!string.IsNullOrEmpty(replacement.Classroom) && replacement.Classroom != "-")
@@ -342,7 +461,6 @@ namespace Kiosk
             };
             stackPanel.Children.Add(title);
 
-            // Показываем ВСЕ уроки, а не только первые 5
             foreach (var lesson in lessons.OrderBy(l => l.Number))
             {
                 var lessonText = $"{lesson.Number}. {lesson.Time} - {lesson.Subject}";
@@ -366,20 +484,69 @@ namespace Kiosk
             AIContentPanel.Children.Add(border);
         }
 
-        private void MapButton_Click(object sender, RoutedEventArgs e)
+        private async void LoadData()
         {
-            // Создаем окно с планами этажей и передаем ссылку на главное окно
-            FloorPlanWindow floorPlanWindow = new FloorPlanWindow(this);
-            floorPlanWindow.Show();
+            try
+            {
+                _scheduleData = await _scheduleService.LoadScheduleAsync(App.Settings.ScheduleFilePath);
+                UpdateClassComboBox();
 
-            // Скрываем главное окно
-            this.Hide();
+                _replacementData = _replacementService.LoadReplacements(App.Settings.ReplacementsFilePath);
+
+                if (_replacementData != null && _replacementData.HasReplacements)
+                {
+                    StatusText.Text = $"Данные загружены ({_scheduleData.Schedules.Count} классов, есть замены)";
+                }
+                else
+                {
+                    StatusText.Text = $"Данные загружены ({_scheduleData.Schedules.Count} классов, замен нет)";
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusText.Text = $"Ошибка загрузки данных: {ex.Message}";
+            }
+        }
+
+        private void UpdateClassComboBox()
+        {
+            AIClassComboBox.Items.Clear();
+
+            if (_scheduleData?.Schedules != null && _scheduleData.Schedules.Any())
+            {
+                foreach (var schedule in _scheduleData.Schedules.OrderBy(s => s.ClassName))
+                {
+                    AIClassComboBox.Items.Add(schedule.ClassName);
+                }
+
+                if (AIClassComboBox.Items.Count > 0)
+                    AIClassComboBox.SelectedIndex = 0;
+            }
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (_isBannerMode)
+            {
+                ExitBannerMode();
+                return;
+            }
+
+            if (e.Key == Key.F11)
+            {
+                ToggleFullScreen();
+            }
+            else if (e.Key == Key.Escape && _isFullScreen)
+            {
+                ToggleFullScreen();
+            }
         }
 
         private void AIClassComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             UpdateAssistantInfo();
         }
+
         private void NewsButton_Click(object sender, RoutedEventArgs e)
         {
             var newsWindow = new NewsBrowserWindow();
@@ -392,7 +559,6 @@ namespace Kiosk
             mapWindow.Show();
         }
 
-        // Остальные методы остаются без изменений
         private void ScheduleButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -437,6 +603,7 @@ namespace Kiosk
                         var settingsWindow = new SettingsWindow();
                         settingsWindow.Owner = this;
                         settingsWindow.ShowDialog();
+                        LoadBannerSettings();
                     }
                     else
                     {
@@ -452,6 +619,7 @@ namespace Kiosk
                         var settingsWindow = new SettingsWindow();
                         settingsWindow.Owner = this;
                         settingsWindow.ShowDialog();
+                        LoadBannerSettings();
                     }
                     else
                     {
@@ -466,19 +634,6 @@ namespace Kiosk
                               MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
-        private void Window_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.F11)
-            {
-                ToggleFullScreen();
-            }
-            else if (e.Key == Key.Escape && _isFullScreen)
-            {
-                ToggleFullScreen();
-            }
-        }
-
 
         private void AboutButton_Click(object sender, RoutedEventArgs e)
         {
@@ -520,6 +675,8 @@ namespace Kiosk
         {
             _timer?.Stop();
             _aiTimer?.Stop();
+            _idleTimer?.Stop();
+            _bannerTimer?.Stop();
             base.OnClosed(e);
             Application.Current.Shutdown();
         }

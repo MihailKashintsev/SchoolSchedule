@@ -1,73 +1,64 @@
-﻿using System.Windows;
+﻿using Newtonsoft.Json;
+using System.IO;
+using System.Windows;
 
 namespace Kiosk
 {
     public partial class App : Application
     {
-        public static AppSettings Settings { get; private set; } = new AppSettings();
+        public static Settings Settings { get; private set; }
 
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-            Settings = AppSettings.Load();
+            LoadSettings();
         }
 
-        protected override void OnExit(ExitEventArgs e)
+        private void LoadSettings()
         {
-            Settings.Save();
-            base.OnExit(e);
+            string settingsPath = "settings.json";
+
+            if (File.Exists(settingsPath))
+            {
+                try
+                {
+                    string json = File.ReadAllText(settingsPath);
+                    Settings = JsonConvert.DeserializeObject<Settings>(json);
+                }
+                catch
+                {
+                    Settings = new Settings();
+                }
+            }
+            else
+            {
+                Settings = new Settings();
+            }
         }
 
-        // Добавьте этот метод
         public static void SaveSettings()
         {
-            Settings.Save();
+            string settingsPath = "settings.json";
+            string json = JsonConvert.SerializeObject(Settings, Formatting.Indented);
+            File.WriteAllText(settingsPath, json);
         }
     }
 
-    public class AppSettings
+    public class Settings
     {
         public string ScheduleFilePath { get; set; } = "schedule.json";
-        public string ReplacementsFilePath { get; set; } = "replacements.docx"; // НОВОЕ ПОЛЕ
+        public string MapUrl { get; set; } = "https://example.com/map";
+        public string NewsUrl { get; set; } = "https://example.com/news";
+        public string ReplacementsFilePath { get; set; } = "replacements.docx";
         public bool AutoRefresh { get; set; } = true;
         public int RefreshInterval { get; set; } = 300;
-        public string AdminPassword { get; set; } = "1234";
         public bool ShowKeyboardForPassword { get; set; } = true;
-        public string MapUrl { get; set; } = "http://ligapervihpheniks.tilda.ws/secretmapforkiosk1";
-        public string NewsUrl { get; set; } = "https://vk.com/school_liga_khimki";
-        public int IdleTimeBeforeBanner { get; set; } = 30; // секунды
+        public string AdminPassword { get; set; } = "1234";
 
-        private static readonly string SettingsPath = "kiosk_settings.json";
-
-        public static AppSettings Load()
-        {
-            try
-            {
-                if (System.IO.File.Exists(SettingsPath))
-                {
-                    string json = System.IO.File.ReadAllText(SettingsPath);
-                    return System.Text.Json.JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
-                }
-            }
-            catch
-            {
-                // Ignore errors and return default settings
-            }
-            return new AppSettings();
-        }
-
-        public void Save()
-        {
-            try
-            {
-                string json = System.Text.Json.JsonSerializer.Serialize(this, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
-                System.IO.File.WriteAllText(SettingsPath, json);
-            }
-            catch (System.Exception ex)
-            {
-                MessageBox.Show($"Ошибка сохранения настроек: {ex.Message}", "Ошибка",
-                              MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
+        // Новые свойства для баннеров
+        public string BannerImagePaths { get; set; } = "";
+        public int BannerTimeout { get; set; } = 30;
+        public int BannerSwitchInterval { get; set; } = 5;
+        public bool EnableBanners { get; set; } = true;
     }
 }
