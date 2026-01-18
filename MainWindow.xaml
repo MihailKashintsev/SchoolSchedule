@@ -8,6 +8,28 @@
         KeyDown="Window_KeyDown">
 
     <Window.Resources>
+        <!-- Анимации для баннеров -->
+        <Storyboard x:Key="BannerFadeIn">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                     From="0" To="1" Duration="0:0:0.5"/>
+        </Storyboard>
+
+        <Storyboard x:Key="BannerFadeOut">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                     From="1" To="0" Duration="0:0:0.5"/>
+        </Storyboard>
+
+        <Storyboard x:Key="ImageFadeIn">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                     From="0" To="1" Duration="0:0:0.5"/>
+        </Storyboard>
+
+        <Storyboard x:Key="ImageFadeOut">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                     From="1" To="0" Duration="0:0:0.3"/>
+        </Storyboard>
+        
+        
         <!-- Ресурсы для теней -->
         <DropShadowEffect x:Key="ShadowLight"
                           BlurRadius="15"
@@ -406,12 +428,11 @@
 
                         <Button x:Name="ReplacementsButton"
                                 Grid.Row="0" Grid.Column="1"
-                                Background="#e67e22"
                                 Margin="10,10"
                                 MinWidth="180"
                                 Height="65"
                                 Click="ReplacementsButton_Click"
-                                Style="{StaticResource ModernButton}">
+                                Style="{StaticResource ModernButton}" Background="#FFE67E22">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <Border Background="White" 
                                         CornerRadius="6" 
@@ -652,41 +673,87 @@
 
         <!-- Режим баннеров -->
         <Grid x:Name="BannerGrid" 
-              Grid.Column="0" 
-              Grid.ColumnSpan="2"
-              Visibility="Collapsed"
-              Background="Black">
+      Grid.Column="0" 
+      Grid.ColumnSpan="2"
+      Visibility="Collapsed"
+      Background="Black"
+      Opacity="0">
 
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+            <!-- Фон с размытием и затемнением -->
+            <Grid.Effect>
+                <BlurEffect x:Name="BannerBlurEffect" Radius="0" />
+            </Grid.Effect>
 
-            <!-- Область для изображения -->
-            <Viewbox Grid.Row="0" Stretch="Uniform">
-                <Image x:Name="BannerImage" 
-                       Source="/Images/banner1.png"
-                       Stretch="Uniform"
-                       RenderOptions.BitmapScalingMode="HighQuality"/>
-            </Viewbox>
+            <!-- Контейнер для плавных переходов -->
+            <Grid x:Name="BannerContentGrid">
+                <!-- Баннер с анимацией перехода -->
+                <Grid x:Name="BannerContainer">
+                    <Grid.Resources>
+                        <Storyboard x:Key="BannerFadeIn">
+                            <DoubleAnimation Storyboard.TargetName="BannerImage"
+                                     Storyboard.TargetProperty="Opacity"
+                                     From="0" To="1" Duration="0:0:1"/>
+                            <DoubleAnimation Storyboard.TargetName="BannerGrid"
+                                     Storyboard.TargetProperty="Opacity"
+                                     From="0" To="1" Duration="0:0:0.5"/>
+                        </Storyboard>
+                        <Storyboard x:Key="BannerFadeOut">
+                            <DoubleAnimation Storyboard.TargetName="BannerImage"
+                                     Storyboard.TargetProperty="Opacity"
+                                     From="1" To="0" Duration="0:0:0.5"/>
+                        </Storyboard>
+                    </Grid.Resources>
 
-            <!-- Кнопка выхода -->
-            <Button Grid.Row="1"
-                    x:Name="ExitBannerButton"
-                    Content="Нажмите, чтобы выйти из режима баннеров"
-                    Background="#80000000"
+                    <!-- Изображение баннера с растяжением на весь экран -->
+                    <Image x:Name="BannerImage" 
+                   Stretch="UniformToFill"
+                   RenderOptions.BitmapScalingMode="HighQuality"
+                   Opacity="0"/>
+                </Grid>
+
+                <!-- Кнопка выхода с размытым фоном -->
+                <Grid VerticalAlignment="Bottom" Margin="0,0,0,40">
+                    <Grid.Effect>
+                        <DropShadowEffect BlurRadius="20" 
+                                  Opacity="0.5" 
+                                  ShadowDepth="0"
+                                  Color="Black"/>
+                    </Grid.Effect>
+
+                    <!-- Размытый фон кнопки -->
+                    <Border x:Name="ExitButtonBackground"
+                    Background="#A0000000"
+                    CornerRadius="15"
+                    Margin="100,0"
+                    Opacity="0.8">
+                        <Border.Effect>
+                            <BlurEffect Radius="10"/>
+                        </Border.Effect>
+                    </Border>
+
+                    <!-- Сама кнопка -->
+                    <Button x:Name="ExitBannerButton"
+                    Content="Нажмите в любом месте экрана для выхода из режима баннеров"
+                    Background="Transparent"
                     Foreground="White"
-                    FontSize="20"
+                    FontSize="24"
                     FontWeight="Bold"
                     BorderThickness="0"
-                    Height="60"
-                    Margin="0,20"
+                    Height="80"
+                    Margin="100,0"
                     Click="ExitBannerButton_Click"
-                    Cursor="Hand">
-                <Button.Effect>
-                    <DropShadowEffect BlurRadius="10" Opacity="0.5" ShadowDepth="3"/>
-                </Button.Effect>
-            </Button>
+                    Cursor="Hand"
+                    Padding="20">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <ContentPresenter Content="{TemplateBinding Content}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Grid>
+            </Grid>
         </Grid>
     </Grid>
 </Window>

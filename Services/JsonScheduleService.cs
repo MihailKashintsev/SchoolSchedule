@@ -20,7 +20,7 @@ namespace Kiosk.Services
                     if (!File.Exists(filePath))
                     {
                         MessageBox.Show($"Файл расписания не найден: {filePath}", "Ошибка",
-                                      MessageBoxButton.OK, MessageBoxImage.Error);
+                                      MessageBoxButton.OK, MessageBoxImage.Information);
                         return CreateEmptySchedule();
                     }
 
