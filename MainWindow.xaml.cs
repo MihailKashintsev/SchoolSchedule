@@ -568,7 +568,7 @@ namespace Kiosk
             }
             else if (state.IsSchoolOver)
             {
-                AddStateItem(statePanel, "🎉 Уроки завершены", "Хорошего отдыха!");
+                AddStateItem(statePanel, "🎉Уроки завершены", "Хорошего отдыха!");
             }
             else
             {

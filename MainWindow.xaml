@@ -342,12 +342,12 @@
                         <StackPanel Margin="40,30">
                             <TextBlock Text="Муниципальное бюджетное общеобразовательное учреждение"
                                        Foreground="#495057"
-                                       FontSize="18"
+                                       FontSize="14"
                                        FontWeight="Medium"
                                        FontFamily="Segoe UI"
                                        TextAlignment="Center"
                                        Margin="0,0,0,8"
-                                       TextOptions.TextRenderingMode="ClearType"/>
+                                       TextOptions.TextRenderingMode="ClearType" Height="24" Width="474" HorizontalAlignment="Center"/>
 
                             <TextBlock Foreground="#2c5f9e"
                                        FontSize="24"
