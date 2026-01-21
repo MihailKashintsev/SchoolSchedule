@@ -17,20 +17,20 @@ namespace Kiosk.Views
         // БЕЛЫЙ СПИСОК: только эти страницы разрешены
         private readonly HashSet<string> _allowedUrlPatterns = new HashSet<string>
         {
-            "vk.com/school_liga_khimki",   // Главная страница
-            "vk.com/feed",                  // Лента новостей
-            "vk.com/school_liga_khimki?w=", // Посты на стене
-            "vk.com/wall",                  // Стена
-            "vk.com/video",                 // Видео
-            "vk.com/photo",                 // Фото
-            "m.vk.com/school_liga_khimki"   // Мобильная версия
+            "vk.com/school_liga_khimki",
+            "vk.com/feed",
+            "vk.com/school_liga_khimki?w=",
+            "vk.com/wall",
+            "vk.com/video",
+            "vk.com/photo",
+            "m.vk.com/school_liga_khimki"
         };
 
         private DispatcherTimer _resetTimer;
         private DispatcherTimer _sessionCleanerTimer;
-        private bool _isButtonAdded = false;
         private bool _isRedirecting = false;
         private string _tempUserDataFolder;
+        private bool _buttonsInjected = false;
 
         public NewsBrowserWindow()
         {
@@ -62,6 +62,7 @@ namespace Kiosk.Views
 
                 // Подписываемся на события
                 webView.CoreWebView2.WebMessageReceived += WebView_WebMessageReceived;
+                webView.CoreWebView2.DOMContentLoaded += CoreWebView2_DOMContentLoaded;
                 webView.NavigationCompleted += WebView_NavigationCompleted;
                 webView.NavigationStarting += WebView_NavigationStarting;
                 webView.CoreWebView2.SourceChanged += CoreWebView2_SourceChanged;
@@ -120,7 +121,7 @@ namespace Kiosk.Views
         private void InitializeResetTimer()
         {
             _resetTimer = new DispatcherTimer();
-            _resetTimer.Interval = TimeSpan.FromMinutes(5);
+            _resetTimer.Interval = TimeSpan.FromMinutes(2); // 2 минуты
             _resetTimer.Tick += async (sender, e) =>
             {
                 await ResetToDefaultPage();
@@ -131,12 +132,183 @@ namespace Kiosk.Views
         private void InitializeSessionCleanerTimer()
         {
             _sessionCleanerTimer = new DispatcherTimer();
-            _sessionCleanerTimer.Interval = TimeSpan.FromMinutes(1); // Очищаем каждую минуту
+            _sessionCleanerTimer.Interval = TimeSpan.FromMinutes(1);
             _sessionCleanerTimer.Tick += async (sender, e) =>
             {
                 await ClearBrowserData();
             };
             _sessionCleanerTimer.Start();
+        }
+
+        private async void CoreWebView2_DOMContentLoaded(object sender, CoreWebView2DOMContentLoadedEventArgs e)
+        {
+            // Вставляем кнопки сразу после загрузки DOM, до загрузки всех ресурсов
+            await AddNavigationButtonsWithJavaScript();
+            _buttonsInjected = true;
+
+            // Проверяем URL после загрузки DOM
+            CheckAndBlockCurrentUrl();
+        }
+
+        private async void WebView_NavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
+        {
+            if (_isRedirecting) return;
+
+            await Task.Delay(100);
+
+            // Если кнопки еще не были добавлены (например, если DOMContentLoaded не сработал)
+            if (!_buttonsInjected)
+            {
+                await AddNavigationButtonsWithJavaScript();
+                _buttonsInjected = true;
+            }
+
+            CheckAndBlockCurrentUrl();
+        }
+
+        private async Task AddNavigationButtonsWithJavaScript()
+        {
+            try
+            {
+                string script = @"
+                    // Удаляем старые элементы
+                    var existingContainer = document.getElementById('wpfButtonContainer');
+                    if (existingContainer) existingContainer.remove();
+
+                    // Создаем контейнер для кнопок
+                    var buttonContainer = document.createElement('div');
+                    buttonContainer.id = 'wpfButtonContainer';
+                    buttonContainer.style.position = 'fixed';
+                    buttonContainer.style.top = '20px';
+                    buttonContainer.style.left = '20px';
+                    buttonContainer.style.zIndex = '9999';
+                    buttonContainer.style.display = 'flex';
+                    buttonContainer.style.gap = '10px';
+                    buttonContainer.style.flexDirection = 'column';
+                    buttonContainer.style.alignItems = 'center';
+
+                    // Кнопка НАЗАД
+                    var backButton = document.createElement('button');
+                    backButton.id = 'wpfBackButton';
+                    backButton.innerHTML = 'НАЗАД';
+                    backButton.style.padding = '15px 30px';
+                    backButton.style.backgroundColor = '#2196F3';
+                    backButton.style.color = 'white';
+                    backButton.style.border = 'none';
+                    backButton.style.borderRadius = '8px';
+                    backButton.style.cursor = 'pointer';
+                    backButton.style.fontSize = '18px';
+                    backButton.style.fontWeight = 'bold';
+                    backButton.style.boxShadow = '0 4px 12px rgba(33, 150, 243, 0.4)';
+                    backButton.style.transition = 'all 0.3s ease';
+                    backButton.style.width = '150px';
+                    backButton.style.textAlign = 'center';
+                    backButton.style.minHeight = '60px';
+                    
+                    // Кнопка ОБНОВИТЬ
+                    var refreshButton = document.createElement('button');
+                    refreshButton.id = 'wpfRefreshButton';
+                    refreshButton.innerHTML = 'ОБНОВИТЬ';
+                    refreshButton.style.padding = '15px 30px';
+                    refreshButton.style.backgroundColor = '#4CAF50';
+                    refreshButton.style.color = 'white';
+                    refreshButton.style.border = 'none';
+                    refreshButton.style.borderRadius = '8px';
+                    refreshButton.style.cursor = 'pointer';
+                    refreshButton.style.fontSize = '18px';
+                    refreshButton.style.fontWeight = 'bold';
+                    refreshButton.style.boxShadow = '0 4px 12px rgba(76, 175, 80, 0.4)';
+                    refreshButton.style.transition = 'all 0.3s ease';
+                    refreshButton.style.width = '150px';
+                    refreshButton.style.textAlign = 'center';
+                    refreshButton.style.minHeight = '60px';
+
+                    // Эффекты при наведении для обеих кнопок
+                    function setupButtonHover(button, originalColor, hoverColor) {
+                        button.onmouseover = function() {
+                            this.style.backgroundColor = hoverColor;
+                            this.style.transform = 'scale(1.05)';
+                            this.style.boxShadow = '0 6px 16px rgba(0,0,0,0.3)';
+                        };
+                        button.onmouseout = function() {
+                            this.style.backgroundColor = originalColor;
+                            this.style.transform = 'scale(1)';
+                            this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+                        };
+                        
+                        // Эффект при нажатии
+                        button.onmousedown = function() {
+                            this.style.transform = 'scale(0.95)';
+                        };
+                        button.onmouseup = function() {
+                            this.style.transform = 'scale(1.05)';
+                        };
+                    }
+
+                    setupButtonHover(backButton, '#2196F3', '#1976D2');
+                    setupButtonHover(refreshButton, '#4CAF50', '#388E3C');
+
+                    // Добавляем кнопки в контейнер
+                    buttonContainer.appendChild(backButton);
+                    buttonContainer.appendChild(refreshButton);
+                    
+                    // Добавляем контейнер на страницу
+                    if (document.body) {
+                        document.body.appendChild(buttonContainer);
+                    } else {
+                        // Если body еще не загружен, ждем его
+                        var observer = new MutationObserver(function(mutations) {
+                            if (document.body) {
+                                document.body.appendChild(buttonContainer);
+                                observer.disconnect();
+                            }
+                        });
+                        observer.observe(document.documentElement, { childList: true, subtree: true });
+                    }
+                    
+                    // Обработчики кликов
+                    backButton.addEventListener('click', function() {
+                        window.chrome.webview.postMessage('closeWindow');
+                    });
+
+                    refreshButton.addEventListener('click', function() {
+                        window.chrome.webview.postMessage('refreshPage');
+                    });
+
+                    // Гарантируем, что кнопки всегда будут видны
+                    var ensureButtonsVisible = function() {
+                        if (buttonContainer.parentNode !== document.body && document.body) {
+                            document.body.appendChild(buttonContainer);
+                        }
+                        buttonContainer.style.zIndex = '9999';
+                    };
+                    
+                    setInterval(ensureButtonsVisible, 1000);
+                    ensureButtonsVisible();
+
+                    // Удаляем сообщение о блокировке, если оно есть
+                    var blockMsg = document.getElementById('blockMessage');
+                    if (blockMsg) {
+                        blockMsg.remove();
+                    }
+                    
+                    // Делаем кнопки более заметными для сенсорного экрана
+                    buttonContainer.style.touchAction = 'manipulation';
+                    backButton.style.touchAction = 'manipulation';
+                    refreshButton.style.touchAction = 'manipulation';
+                    
+                    // Возвращаем успех
+                    'Buttons injected successfully';
+                ";
+
+                await webView.ExecuteScriptAsync(script);
+            }
+            catch (Exception)
+            {
+                // Повторяем попытку через 500мс
+                await Task.Delay(500);
+                await AddNavigationButtonsWithJavaScript();
+            }
         }
 
         private async Task ClearBrowserData()
@@ -297,7 +469,7 @@ namespace Kiosk.Views
         {
             if (webView != null && webView.CoreWebView2 != null)
             {
-                _isButtonAdded = false;
+                _buttonsInjected = false;
                 _isRedirecting = true;
 
                 try
@@ -349,7 +521,7 @@ namespace Kiosk.Views
                 return;
             }
 
-            _isButtonAdded = false;
+            _buttonsInjected = false;
 
             // Очищаем данные формы при переходе
             Dispatcher.InvokeAsync(async () =>
@@ -386,154 +558,6 @@ namespace Kiosk.Views
             if (isAllowed && !_isRedirecting)
             {
                 webView.CoreWebView2.Navigate(e.Uri);
-            }
-        }
-
-        private async void WebView_NavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
-        {
-            if (_isRedirecting) return;
-
-            await Task.Delay(500);
-
-            CheckAndBlockCurrentUrl();
-
-            if (!_isButtonAdded && !_isRedirecting)
-            {
-                await AddNavigationButtonsWithJavaScript();
-                _isButtonAdded = true;
-            }
-        }
-
-        private async Task AddNavigationButtonsWithJavaScript()
-        {
-            try
-            {
-                string script = @"
-                    // Удаляем старые элементы
-                    var existingContainer = document.getElementById('wpfButtonContainer');
-                    if (existingContainer) existingContainer.remove();
-
-                    // Создаем контейнер для кнопок
-                    var buttonContainer = document.createElement('div');
-                    buttonContainer.id = 'wpfButtonContainer';
-                    buttonContainer.style.position = 'fixed';
-                    buttonContainer.style.top = '20px';
-                    buttonContainer.style.left = '20px';
-                    buttonContainer.style.zIndex = '9999';
-                    buttonContainer.style.display = 'flex';
-                    buttonContainer.style.gap = '10px';
-                    buttonContainer.style.flexDirection = 'column';
-                    buttonContainer.style.alignItems = 'center';
-
-                    // Кнопка НАЗАД
-                    var backButton = document.createElement('button');
-                    backButton.id = 'wpfBackButton';
-                    backButton.innerHTML = 'НАЗАД';
-                    backButton.style.padding = '15px 30px';
-                    backButton.style.backgroundColor = '#2196F3';
-                    backButton.style.color = 'white';
-                    backButton.style.border = 'none';
-                    backButton.style.borderRadius = '8px';
-                    backButton.style.cursor = 'pointer';
-                    backButton.style.fontSize = '18px';
-                    backButton.style.fontWeight = 'bold';
-                    backButton.style.boxShadow = '0 4px 12px rgba(33, 150, 243, 0.4)';
-                    backButton.style.transition = 'all 0.3s ease';
-                    backButton.style.width = '150px';
-                    backButton.style.textAlign = 'center';
-                    backButton.style.minHeight = '60px';
-                    
-                    // Кнопка ОБНОВИТЬ
-                    var refreshButton = document.createElement('button');
-                    refreshButton.id = 'wpfRefreshButton';
-                    refreshButton.innerHTML = 'ОБНОВИТЬ';
-                    refreshButton.style.padding = '15px 30px';
-                    refreshButton.style.backgroundColor = '#4CAF50';
-                    refreshButton.style.color = 'white';
-                    refreshButton.style.border = 'none';
-                    refreshButton.style.borderRadius = '8px';
-                    refreshButton.style.cursor = 'pointer';
-                    refreshButton.style.fontSize = '18px';
-                    refreshButton.style.fontWeight = 'bold';
-                    refreshButton.style.boxShadow = '0 4px 12px rgba(76, 175, 80, 0.4)';
-                    refreshButton.style.transition = 'all 0.3s ease';
-                    refreshButton.style.width = '150px';
-                    refreshButton.style.textAlign = 'center';
-                    refreshButton.style.minHeight = '60px';
-
-                    // Эффекты при наведении для обеих кнопок
-                    function setupButtonHover(button, originalColor, hoverColor) {
-                        button.onmouseover = function() {
-                            this.style.backgroundColor = hoverColor;
-                            this.style.transform = 'scale(1.05)';
-                            this.style.boxShadow = '0 6px 16px rgba(0,0,0,0.3)';
-                        };
-                        button.onmouseout = function() {
-                            this.style.backgroundColor = originalColor;
-                            this.style.transform = 'scale(1)';
-                            this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-                        };
-                        
-                        // Эффект при нажатии
-                        button.onmousedown = function() {
-                            this.style.transform = 'scale(0.95)';
-                        };
-                        button.onmouseup = function() {
-                            this.style.transform = 'scale(1.05)';
-                        };
-                    }
-
-                    setupButtonHover(backButton, '#2196F3', '#1976D2');
-                    setupButtonHover(refreshButton, '#4CAF50', '#388E3C');
-
-                    // Добавляем кнопки в контейнер
-                    buttonContainer.appendChild(backButton);
-                    buttonContainer.appendChild(refreshButton);
-                    
-                    // Добавляем контейнер на страницу
-                    document.body.appendChild(buttonContainer);
-                    
-                    // Обработчики кликов
-                    backButton.addEventListener('click', function() {
-                        window.chrome.webview.postMessage('closeWindow');
-                    });
-
-                    refreshButton.addEventListener('click', function() {
-                        window.chrome.webview.postMessage('refreshPage');
-                    });
-
-                    // Гарантируем, что кнопки всегда будут видны
-                    var ensureButtonsVisible = function() {
-                        if (buttonContainer.parentNode !== document.body) {
-                            document.body.appendChild(buttonContainer);
-                        }
-                        buttonContainer.style.zIndex = '9999';
-                    };
-                    
-                    setInterval(ensureButtonsVisible, 1000);
-                    ensureButtonsVisible();
-
-                    // Удаляем сообщение о блокировке, если оно есть
-                    var blockMsg = document.getElementById('blockMessage');
-                    if (blockMsg) {
-                        blockMsg.remove();
-                    }
-                    
-                    // Делаем кнопки более заметными для сенсорного экрана
-                    buttonContainer.style.touchAction = 'manipulation';
-                    backButton.style.touchAction = 'manipulation';
-                    refreshButton.style.touchAction = 'manipulation';
-                ";
-
-                await webView.ExecuteScriptAsync(script);
-            }
-            catch (Exception)
-            {
-                await Task.Delay(1000);
-                if (!_isRedirecting)
-                {
-                    await AddNavigationButtonsWithJavaScript();
-                }
             }
         }
 
@@ -636,3 +660,4 @@ namespace Kiosk.Views
         }
     }
 }
+
