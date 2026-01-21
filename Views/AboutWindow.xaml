@@ -11,7 +11,7 @@
     <Window.Resources>
         <!-- Градиенты -->
         <LinearGradientBrush x:Key="HeaderGradient" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#2c5f9e" Offset="0"/>
+            <GradientStop Color="#4B0082" Offset="0"/>
             <GradientStop Color="#3a7bc8" Offset="1"/>
         </LinearGradientBrush>
 
