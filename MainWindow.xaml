@@ -28,8 +28,7 @@
             <DoubleAnimation Storyboard.TargetProperty="Opacity"
                      From="1" To="0" Duration="0:0:0.3"/>
         </Storyboard>
-        
-        
+
         <!-- Ресурсы для теней -->
         <DropShadowEffect x:Key="ShadowLight"
                           BlurRadius="15"
@@ -122,7 +121,7 @@
             <Setter Property="Foreground" Value="#6c757d"/>
         </Style>
 
-        <!-- Общий стиль для кнопок -->
+        <!-- Обновленный стиль для кнопок с анимированными градиентами -->
         <Style x:Key="ModernButton" TargetType="Button">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="18"/>
@@ -134,9 +133,15 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="border"
-                                Background="{TemplateBinding Background}" 
                                 CornerRadius="10"
                                 Effect="{StaticResource ShadowButton}">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#2c5f9e" Offset="0"/>
+                                    <GradientStop Color="#2c5f9e" Offset="0.5"/>
+                                    <GradientStop Color="#1a4a7a" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
                             <ContentPresenter HorizontalAlignment="Center" 
                                               VerticalAlignment="Center"
                                               Margin="20,15"/>
@@ -154,7 +159,7 @@
             </Setter>
         </Style>
 
-        <!-- Упрощенный стиль для кнопки Новости (без анимации масштаба) -->
+        <!-- Обновленный стиль для кнопки Новости с анимацией -->
         <Style x:Key="NewsButtonStyle" TargetType="Button">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="20"/>
@@ -166,9 +171,15 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="border"
-                                Background="#FF0004FF" 
                                 CornerRadius="10"
                                 Effect="{StaticResource ShadowButton}">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#4361ee" Offset="0"/>
+                                    <GradientStop x:Name="newsGradient1" Color="#4361ee" Offset="0.5"/>
+                                    <GradientStop x:Name="newsGradient2" Color="#3a0ca3" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
                             <ContentPresenter HorizontalAlignment="Center" 
                                               VerticalAlignment="Center"
                                               Margin="20,15"/>
@@ -176,11 +187,9 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border" Property="Effect" Value="{StaticResource ShadowButtonHover}"/>
-                                <Setter TargetName="border" Property="Background" Value="#0000CC"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="border" Property="Effect" Value="{StaticResource ShadowLight}"/>
-                                <Setter TargetName="border" Property="Background" Value="#000099"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -390,7 +399,7 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- Кнопки навигации -->
+                    <!-- Кнопки навигации с анимированными градиентами -->
                     <Grid Margin="20,30">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -404,121 +413,243 @@
 
                         <!-- Первая строка -->
                         <Button x:Name="ScheduleButton"
-                                Grid.Row="0" Grid.Column="0"
-                                Background="#2c5f9e"
-                                Margin="10,10"
-                                MinWidth="180"
-                                Height="65"
-                                Click="ScheduleButton_Click"
-                                Style="{StaticResource ModernButton}">
+            Grid.Row="0" Grid.Column="0"
+            Margin="10,10"
+            MinWidth="220"
+            Height="85"
+            Click="ScheduleButton_Click"
+            Foreground="White"
+            FontSize="22"
+            FontWeight="SemiBold"
+            FontFamily="Segoe UI"
+            BorderThickness="0"
+            Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="border"
+                        CornerRadius="12"
+                        Effect="{StaticResource ShadowButton}">
+                                        <ContentPresenter HorizontalAlignment="Center" 
+                                      VerticalAlignment="Center"
+                                      Margin="25,20"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Effect" Value="{StaticResource ShadowButtonHover}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="border" Property="Effect" Value="{StaticResource ShadowLight}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <Border Background="White" 
-                                        CornerRadius="6" 
-                                        Padding="4"
-                                        Margin="0,0,10,0">
+                    CornerRadius="8" 
+                    Padding="6"
+                    Margin="0,0,15,0">
                                     <Image Source="/Images/ring.png" 
-                                           Width="20" 
-                                           Height="20"/>
+                       Width="32" 
+                       Height="32"/>
                                 </Border>
                                 <TextBlock Text="Расписание" 
-                                           VerticalAlignment="Center"
-                                           FontSize="18"/>
+                       VerticalAlignment="Center"
+                       FontSize="22"
+                       Foreground="White"/>
                             </StackPanel>
                         </Button>
 
                         <Button x:Name="ReplacementsButton"
-                                Grid.Row="0" Grid.Column="1"
-                                Margin="10,10"
-                                MinWidth="180"
-                                Height="65"
-                                Click="ReplacementsButton_Click"
-                                Style="{StaticResource ModernButton}" Background="#FFE67E22">
+            Grid.Row="0" Grid.Column="1"
+            Margin="10,10"
+            MinWidth="220"
+            Height="85"
+            Click="ReplacementsButton_Click"
+            Foreground="White"
+            FontSize="22"
+            FontWeight="SemiBold"
+            FontFamily="Segoe UI"
+            BorderThickness="0"
+            Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="border"
+                        CornerRadius="12"
+                        Effect="{StaticResource ShadowButton}">
+                                        <ContentPresenter HorizontalAlignment="Center" 
+                                      VerticalAlignment="Center"
+                                      Margin="25,20"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Effect" Value="{StaticResource ShadowButtonHover}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="border" Property="Effect" Value="{StaticResource ShadowLight}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <Border Background="White" 
-                                        CornerRadius="6" 
-                                        Padding="4"
-                                        Margin="0,0,10,0">
+                    CornerRadius="8" 
+                    Padding="6"
+                    Margin="0,0,15,0">
                                     <Image Source="/Images/refresh_emoji.png" 
-                                           Width="20" 
-                                           Height="20"/>
+                       Width="32" 
+                       Height="32"/>
                                 </Border>
                                 <TextBlock Text="Замены" 
-                                           VerticalAlignment="Center"
-                                           FontSize="18"/>
+                       VerticalAlignment="Center"
+                       FontSize="22"
+                       Foreground="White"/>
                             </StackPanel>
                         </Button>
 
                         <!-- Вторая строка -->
                         <Button x:Name="AboutButton"
-                                Grid.Row="1" Grid.Column="0"
-                                Background="#9b59b6"
-                                Margin="10,10"
-                                MinWidth="180"
-                                Height="65"
-                                Click="AboutButton_Click"
-                                Style="{StaticResource ModernButton}">
+            Grid.Row="1" Grid.Column="0"
+            Margin="10,10"
+            MinWidth="220"
+            Height="85"
+            Click="AboutButton_Click"
+            Foreground="White"
+            FontSize="22"
+            FontWeight="SemiBold"
+            FontFamily="Segoe UI"
+            BorderThickness="0"
+            Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="border"
+                        CornerRadius="12"
+                        Effect="{StaticResource ShadowButton}">
+                                        <ContentPresenter HorizontalAlignment="Center" 
+                                      VerticalAlignment="Center"
+                                      Margin="25,20"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Effect" Value="{StaticResource ShadowButtonHover}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="border" Property="Effect" Value="{StaticResource ShadowLight}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <Border Background="White" 
-                                        CornerRadius="6" 
-                                        Padding="4"
-                                        Margin="0,0,10,0">
+                    CornerRadius="8" 
+                    Padding="6"
+                    Margin="0,0,15,0">
                                     <Image Source="/Images/Logo.png" 
-                                           Width="20" 
-                                           Height="20"/>
+                       Width="32" 
+                       Height="32"/>
                                 </Border>
                                 <TextBlock Text="О проекте" 
-                                           VerticalAlignment="Center"
-                                           FontSize="18"/>
+                       VerticalAlignment="Center"
+                       FontSize="22"
+                       Foreground="White"/>
                             </StackPanel>
                         </Button>
 
                         <Button x:Name="MapBrowserButton"
-                                Grid.Row="1" Grid.Column="1"
-                                Background="#27ae60"
-                                Margin="10,10"
-                                MinWidth="180"
-                                Height="65"
-                                Click="MapBrowserButton_Click"
-                                Style="{StaticResource ModernButton}">
+            Grid.Row="1" Grid.Column="1"
+            Margin="10,10"
+            MinWidth="220"
+            Height="85"
+            Click="MapBrowserButton_Click"
+            Foreground="White"
+            FontSize="22"
+            FontWeight="SemiBold"
+            FontFamily="Segoe UI"
+            BorderThickness="0"
+            Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="border"
+                        CornerRadius="12"
+                        Effect="{StaticResource ShadowButton}">
+                                        <ContentPresenter HorizontalAlignment="Center" 
+                                      VerticalAlignment="Center"
+                                      Margin="25,20"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Effect" Value="{StaticResource ShadowButtonHover}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="border" Property="Effect" Value="{StaticResource ShadowLight}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <Border Background="White" 
-                                        CornerRadius="6" 
-                                        Padding="4"
-                                        Margin="0,0,10,0">
+                    CornerRadius="8" 
+                    Padding="6"
+                    Margin="0,0,15,0">
                                     <Image Source="/Images/map_emoji.png" 
-                                           Width="20" 
-                                           Height="20"/>
+                       Width="32" 
+                       Height="32"/>
                                 </Border>
                                 <TextBlock Text="Карта здания" 
-                                           VerticalAlignment="Center"
-                                           FontSize="18"/>
+                       VerticalAlignment="Center"
+                       FontSize="22"
+                       Foreground="White"/>
                             </StackPanel>
                         </Button>
 
-                        <!-- Третья строка - кнопка "Новости" на всю ширину -->
+                        <!-- Третья строка - кнопка "Новости" -->
                         <Button x:Name="News"
-                                Grid.Row="2" 
-                                Grid.Column="0"
-                                Grid.ColumnSpan="2"
-                                Margin="10,15"
-                                Height="70"
-                                Click="NewsButton_Click"
-                                Style="{StaticResource NewsButtonStyle}">
+            Grid.Row="2" 
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
+            Margin="10,15"
+            Height="95"
+            Click="NewsButton_Click"
+            Foreground="White"
+            FontSize="24"
+            FontWeight="Bold"
+            FontFamily="Segoe UI"
+            BorderThickness="0"
+            Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="border"
+                        CornerRadius="12"
+                        Effect="{StaticResource ShadowButton}">
+                                        <ContentPresenter HorizontalAlignment="Center" 
+                                      VerticalAlignment="Center"
+                                      Margin="25,20"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Effect" Value="{StaticResource ShadowButtonHover}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="border" Property="Effect" Value="{StaticResource ShadowLight}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
                             <StackPanel Orientation="Horizontal" 
-                                        VerticalAlignment="Center" 
-                                        HorizontalAlignment="Center">
+                    VerticalAlignment="Center" 
+                    HorizontalAlignment="Center">
                                 <Border Background="White" 
-                                        CornerRadius="6" 
-                                        Padding="4"
-                                        Margin="0,0,15,0">
+                    CornerRadius="8" 
+                    Padding="6"
+                    Margin="0,0,20,0">
                                     <Image Source="/Images/newsVK.png" 
-                                           Width="22" 
-                                           Height="22"/>
+                       Width="34" 
+                       Height="34"/>
                                 </Border>
                                 <TextBlock Text="Новости" 
-                                           VerticalAlignment="Center"
-                                           FontSize="20"
-                                           FontWeight="Bold"/>
+                       VerticalAlignment="Center"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       Foreground="White"/>
                             </StackPanel>
                         </Button>
                     </Grid>
@@ -561,7 +692,6 @@
                 Padding="20"
                 Effect="{StaticResource ShadowLight}">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-
                         <StackPanel>
                             <TextBlock Text="Школьный помощник" 
                                Foreground="White" 

@@ -33,6 +33,13 @@ namespace Kiosk
         private DateTime _lastUserActivity;
         private bool _isBannerMode = false;
 
+        // Анимированные кисти для кнопок
+        private LinearGradientBrush _scheduleBrush;
+        private LinearGradientBrush _replacementsBrush;
+        private LinearGradientBrush _aboutBrush;
+        private LinearGradientBrush _mapBrush;
+        private LinearGradientBrush _newsBrush;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -47,6 +54,7 @@ namespace Kiosk
             this.PreviewKeyDown += Window_PreviewKeyDown;
             this.PreviewTouchDown += Window_PreviewTouchDown;
             this.PreviewTouchMove += Window_PreviewTouchMove;
+            Loaded += MainWindow_Loaded;
 
             // Начальное время активности
             _lastUserActivity = DateTime.Now;
@@ -54,6 +62,127 @@ namespace Kiosk
             // Set fullscreen mode
             WindowState = WindowState.Maximized;
             WindowStyle = WindowStyle.None;
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Создаем и запускаем анимации для кнопок
+            CreateButtonAnimations();
+        }
+
+        private void CreateButtonAnimations()
+        {
+            // Анимация для кнопки "Расписание" (синяя)
+            _scheduleBrush = CreateAnimatedBrush(
+                Color.FromRgb(44, 95, 158),   // Темно-синий (#2c5f9e)
+                Color.FromRgb(52, 152, 219),  // Светло-синий (#3498db)
+                Color.FromRgb(41, 128, 185),  // Синий (#2980b9)
+                Color.FromRgb(26, 74, 122)    // Очень темно-синий (#1a4a7a)
+            );
+
+            // Применяем анимированную кисть к кнопке "Расписание"
+            if (ScheduleButton.Template.FindName("border", ScheduleButton) is Border scheduleBorder)
+            {
+                scheduleBorder.Background = _scheduleBrush;
+            }
+
+            // Анимация для кнопки "Замены" (оранжевая лава)
+            _replacementsBrush = CreateAnimatedBrush(
+                Color.FromRgb(255, 230, 126),  // Светло-оранжевый (#FFE67E)
+                Color.FromRgb(255, 165, 0),    // Оранжевый (#FFA500)
+                Color.FromRgb(255, 69, 0),     // Красный (#FF4500)
+                Color.FromRgb(255, 215, 0)     // Золотой (#FFD700)
+            );
+
+            // Применяем анимированную кисть к кнопке "Замены"
+            if (ReplacementsButton.Template.FindName("border", ReplacementsButton) is Border replacementsBorder)
+            {
+                replacementsBorder.Background = _replacementsBrush;
+            }
+
+            // Анимация для кнопки "О проекте" (фиолетово-красная)
+            _aboutBrush = CreateAnimatedBrush(
+                Color.FromRgb(155, 89, 182),   // Фиолетовый (#9b59b6)
+                Color.FromRgb(231, 76, 60),    // Красный (#e74c3c)
+                Color.FromRgb(243, 156, 18),   // Оранжевый (#f39c12)
+                Color.FromRgb(142, 68, 173)    // Темно-фиолетовый (#8e44ad)
+            );
+
+            if (AboutButton.Template.FindName("border", AboutButton) is Border aboutBorder)
+            {
+                aboutBorder.Background = _aboutBrush;
+            }
+
+            // Анимация для кнопки "Карта здания" (зелено-синяя)
+            _mapBrush = CreateAnimatedBrush(
+                Color.FromRgb(39, 174, 96),    // Зеленый (#27ae60)
+                Color.FromRgb(46, 204, 113),   // Светло-зеленый (#2ecc71)
+                Color.FromRgb(52, 152, 219),   // Синий (#3498db)
+                Color.FromRgb(34, 153, 84)     // Темно-зеленый (#229954)
+            );
+
+            if (MapBrowserButton.Template.FindName("border", MapBrowserButton) is Border mapBorder)
+            {
+                mapBorder.Background = _mapBrush;
+            }
+
+            // Анимация для кнопки "Новости" (сине-фиолетовая)
+            _newsBrush = CreateAnimatedBrush(
+                Color.FromRgb(67, 97, 238),    // Синий (#4361ee)
+                Color.FromRgb(58, 12, 163),    // Темно-синий (#3a0ca3)
+                Color.FromRgb(114, 9, 183),    // Фиолетовый (#7209b7)
+                Color.FromRgb(247, 37, 133)    // Розовый (#f72585)
+            );
+
+            if (News.Template.FindName("border", News) is Border newsBorder)
+            {
+                newsBorder.Background = _newsBrush;
+            }
+        }
+
+        private LinearGradientBrush CreateAnimatedBrush(Color color1, Color color2, Color color3, Color color4)
+        {
+            // Создаем градиентную кисть
+            LinearGradientBrush brush = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(1, 1)
+            };
+
+            // Создаем градиентные остановки
+            GradientStop stop1 = new GradientStop(color1, 0);
+            GradientStop stop2 = new GradientStop(color1, 0.5);
+            GradientStop stop3 = new GradientStop(color3, 1);
+
+            brush.GradientStops.Add(stop1);
+            brush.GradientStops.Add(stop2);
+            brush.GradientStops.Add(stop3);
+
+            // Создаем анимации
+            ColorAnimation animation1 = new ColorAnimation
+            {
+                From = color1,
+                To = color2,
+                Duration = TimeSpan.FromSeconds(2),
+                AutoReverse = true,
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+
+            ColorAnimation animation2 = new ColorAnimation
+            {
+                From = color3,
+                To = color4,
+                Duration = TimeSpan.FromSeconds(3),
+                BeginTime = TimeSpan.FromSeconds(1),
+                AutoReverse = true,
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+
+            // Запускаем анимации
+            stop1.BeginAnimation(GradientStop.ColorProperty, animation1);
+            stop2.BeginAnimation(GradientStop.ColorProperty, animation2);
+
+            return brush;
         }
 
         private void LoadBannerSettings()
@@ -653,6 +782,7 @@ namespace Kiosk
         {
             UpdateAssistantInfo();
         }
+
         private void NewsButton_Click(object sender, RoutedEventArgs e)
         {
             var newsWindow = new NewsBrowserWindow();
@@ -665,7 +795,6 @@ namespace Kiosk
             mapWindow.Show();
         }
 
-        // Остальные методы остаются без изменений
         private void ScheduleButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -761,7 +890,6 @@ namespace Kiosk
                 ToggleFullScreen();
             }
         }
-
 
         private void AboutButton_Click(object sender, RoutedEventArgs e)
         {
