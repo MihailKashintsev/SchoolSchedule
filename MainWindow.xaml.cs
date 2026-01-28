@@ -40,9 +40,6 @@ namespace Kiosk
         private LinearGradientBrush _mapBrush;
         private LinearGradientBrush _newsBrush;
 
-        // Статический словарь для управления окнами
-        private static Dictionary<Type, Window> _openWindows = new Dictionary<Type, Window>();
-
         public MainWindow()
         {
             InitializeComponent();
@@ -788,22 +785,46 @@ namespace Kiosk
 
         private void NewsButton_Click(object sender, RoutedEventArgs e)
         {
-            OpenOrFocusWindow<NewsBrowserWindow>();
+            var newsWindow = new NewsBrowserWindow();
+            newsWindow.Show();
         }
 
         private void MapBrowserButton_Click(object sender, RoutedEventArgs e)
         {
-            OpenOrFocusWindow<BrowserMap>();
+            var mapWindow = new BrowserMap();
+            mapWindow.Show();
         }
 
         private void ScheduleButton_Click(object sender, RoutedEventArgs e)
         {
-            OpenOrFocusWindow<Views.ScheduleWindow>();
+            try
+            {
+                var scheduleWindow = new Views.ScheduleWindow();
+                scheduleWindow.Owner = this;
+                scheduleWindow.Show();
+                this.Hide();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при открытии расписания: {ex.Message}", "Ошибка",
+                              MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void ReplacementsButton_Click(object sender, RoutedEventArgs e)
         {
-            OpenOrFocusWindow<Views.ReplacementsWindow>();
+            try
+            {
+                var replacementsWindow = new Views.ReplacementsWindow();
+                replacementsWindow.Owner = this;
+                replacementsWindow.Show();
+                this.Hide();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при открытии замен: {ex.Message}", "Ошибка",
+                              MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
@@ -872,7 +893,18 @@ namespace Kiosk
 
         private void AboutButton_Click(object sender, RoutedEventArgs e)
         {
-            OpenOrFocusWindow<Views.AboutWindow>();
+            try
+            {
+                var aboutWindow = new Views.AboutWindow();
+                aboutWindow.Owner = this;
+                aboutWindow.Show();
+                this.Hide();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при открытии информации о проекте: {ex.Message}", "Ошибка",
+                              MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void ToggleFullScreen()
@@ -895,124 +927,14 @@ namespace Kiosk
             }
         }
 
-        // Метод для открытия или фокусировки окна
-        private void OpenOrFocusWindow<T>() where T : Window, new()
-        {
-            try
-            {
-                // Проверяем, есть ли уже открытое окно этого типа
-                if (_openWindows.ContainsKey(typeof(T)))
-                {
-                    var window = _openWindows[typeof(T)];
-                    if (window != null && window.IsVisible)
-                    {
-                        // Активируем существующее окно
-                        window.Activate();
-                        window.WindowState = WindowState.Normal;
-                        window.Focus();
-                        return;
-                    }
-                    else
-                    {
-                        // Удаляем недействительное окно
-                        _openWindows.Remove(typeof(T));
-                    }
-                }
-
-                // Создаем новое окно
-                var newWindow = new T();
-                newWindow.Owner = this;
-
-                // Обработчик закрытия окна
-                newWindow.Closed += (s, args) =>
-                {
-                    if (_openWindows.ContainsKey(typeof(T)))
-                    {
-                        _openWindows.Remove(typeof(T));
-                    }
-                };
-
-                // Добавляем в словарь и показываем
-                _openWindows[typeof(T)] = newWindow;
-                newWindow.Show();
-
-                // Скрываем главное окно
-                this.Hide();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при открытии окна: {ex.Message}", "Ошибка",
-                              MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        // Обработчик для показа главного окна при закрытии дочерних
-        public void ShowMainWindow()
-        {
-            this.Show();
-            this.Activate();
-            this.WindowState = WindowState.Normal;
-            this.Focus();
-        }
-
         protected override void OnClosed(EventArgs e)
         {
-            // Закрываем все дочерние окна
-            foreach (var window in _openWindows.Values.ToList())
-            {
-                try
-                {
-                    window?.Close();
-                }
-                catch { }
-            }
-
             _timer?.Stop();
             _aiTimer?.Stop();
             _idleTimer?.Stop();
             _bannerTimer?.Stop();
-
-            // Очищаем кэш WebView2
-            ClearWebView2Cache();
-
             base.OnClosed(e);
             Application.Current.Shutdown();
-        }
-
-        private async void ClearWebView2Cache()
-        {
-            try
-            {
-                var cacheFolder = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "KioskApp",
-                    "WebView2Cache");
-
-                if (Directory.Exists(cacheFolder))
-                {
-                    await System.Threading.Tasks.Task.Run(() =>
-                    {
-                        try
-                        {
-                            // Пробуем несколько раз удалить файлы
-                            for (int i = 0; i < 3; i++)
-                            {
-                                try
-                                {
-                                    Directory.Delete(cacheFolder, true);
-                                    break;
-                                }
-                                catch
-                                {
-                                    System.Threading.Thread.Sleep(100);
-                                }
-                            }
-                        }
-                        catch { }
-                    });
-                }
-            }
-            catch { }
         }
     }
 }

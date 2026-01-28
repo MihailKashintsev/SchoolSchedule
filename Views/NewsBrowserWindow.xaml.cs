@@ -1,12 +1,12 @@
 ﻿using Microsoft.Web.WebView2.Wpf;
 using System;
+using System.Windows;
+using System.Windows.Threading;
+using System.Windows.Input;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.IO;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Threading;
 using Microsoft.Web.WebView2.Core;
-using System.Threading.Tasks;
 
 namespace Kiosk.Views
 {
@@ -29,14 +29,16 @@ namespace Kiosk.Views
         private DispatcherTimer _resetTimer;
         private DispatcherTimer _sessionCleanerTimer;
         private bool _isRedirecting = false;
+        private string _tempUserDataFolder;
         private bool _buttonsInjected = false;
-        private static CoreWebView2Environment _sharedNewsEnvironment;
-        private static readonly object _newsEnvLock = new object();
-        private bool _isInitialized = false;
 
         public NewsBrowserWindow()
         {
             InitializeComponent();
+
+            // Создаем временную папку для данных браузера
+            _tempUserDataFolder = Path.Combine(Path.GetTempPath(), "KioskBrowser_" + Guid.NewGuid().ToString());
+
             InitializeAsync();
         }
 
@@ -44,14 +46,19 @@ namespace Kiosk.Views
         {
             try
             {
-                // Используем общее окружение для новостей
-                var environment = await GetSharedNewsEnvironment();
+                // Создаем окружение с временной папкой для данных
+                var environment = await CoreWebView2Environment.CreateAsync(
+                    browserExecutableFolder: null,
+                    userDataFolder: _tempUserDataFolder);
 
-                // Инициализируем WebView2 с общим окружением
+                // Инициализируем WebView2 с нашим окружением
                 await webView.EnsureCoreWebView2Async(environment);
 
-                // Настройки для ускорения загрузки
-                ConfigureWebViewSettings();
+                // Настраиваем параметры для предотвращения сохранения данных
+                ConfigurePrivacySettings();
+
+                // Включаем поддержку сообщений из JavaScript
+                webView.CoreWebView2.Settings.IsWebMessageEnabled = true;
 
                 // Подписываемся на события
                 webView.CoreWebView2.WebMessageReceived += WebView_WebMessageReceived;
@@ -62,16 +69,11 @@ namespace Kiosk.Views
                 webView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
 
                 // Загружаем начальную страницу
-                if (!string.IsNullOrEmpty(DefaultNewsUrl))
-                {
-                    webView.Source = new Uri(DefaultNewsUrl);
-                }
+                webView.Source = new Uri(DefaultNewsUrl);
 
                 // Настраиваем таймеры
                 InitializeResetTimer();
                 InitializeSessionCleanerTimer();
-
-                _isInitialized = true;
             }
             catch (Exception ex)
             {
@@ -80,54 +82,40 @@ namespace Kiosk.Views
             }
         }
 
-        private async Task<CoreWebView2Environment> GetSharedNewsEnvironment()
+        private void ConfigurePrivacySettings()
         {
-            if (_sharedNewsEnvironment == null)
-            {
-                lock (_newsEnvLock)
-                {
-                    if (_sharedNewsEnvironment == null)
-                    {
-                        var cacheFolder = Path.Combine(
-                            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                            "KioskApp",
-                            "WebView2Cache",
-                            "News");
+            // Отключаем сохранение данных
+            webView.CoreWebView2.Settings.IsPasswordAutosaveEnabled = false;
+            webView.CoreWebView2.Settings.IsGeneralAutofillEnabled = false;
+            webView.CoreWebView2.Settings.IsZoomControlEnabled = false;
 
-                        Directory.CreateDirectory(cacheFolder);
+            // Блокируем всплывающие окна
+            webView.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
 
-                        var task = CoreWebView2Environment.CreateAsync(
-                            browserExecutableFolder: null,
-                            userDataFolder: cacheFolder,
-                            options: new CoreWebView2EnvironmentOptions()
-                            {
-                                AdditionalBrowserArguments =
-                                    "--disk-cache-size=268435456 " +
-                                    "--media-cache-size=268435456 " +
-                                    "--disable-background-networking " +
-                                    "--no-first-run " +
-                                    "--disable-features=TranslateUI"
-                            });
+            // Отключаем DevTools
+            webView.CoreWebView2.Settings.AreDevToolsEnabled = false;
 
-                        _sharedNewsEnvironment = task.GetAwaiter().GetResult();
-                    }
-                }
-            }
-            return _sharedNewsEnvironment;
+            // Отключаем контекстное меню
+            webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+
+            // Блокируем скрипты, которые могут сохранять данные
+            webView.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+            webView.CoreWebView2.WebResourceRequested += CoreWebView2_WebResourceRequested;
         }
 
-        private void ConfigureWebViewSettings()
+        private void CoreWebView2_WebResourceRequested(object sender, CoreWebView2WebResourceRequestedEventArgs e)
         {
-            // Включаем кэширование для ускорения загрузки
-            webView.CoreWebView2.Settings.IsGeneralAutofillEnabled = false;
-            webView.CoreWebView2.Settings.IsPasswordAutosaveEnabled = false;
-            webView.CoreWebView2.Settings.AreBrowserAcceleratorKeysEnabled = false;
-
-            // Отключаем ненужные функции
-            webView.CoreWebView2.Settings.IsZoomControlEnabled = false;
-            webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
-            webView.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
-            webView.CoreWebView2.Settings.AreDevToolsEnabled = false;
+            // Блокируем запросы к сервисам авторизации
+            var requestUri = e.Request.Uri.ToLower();
+            if (requestUri.Contains("login") ||
+                requestUri.Contains("auth") ||
+                requestUri.Contains("oauth") ||
+                requestUri.Contains("password") ||
+                requestUri.Contains("token"))
+            {
+                e.Response = webView.CoreWebView2.Environment.CreateWebResourceResponse(
+                    null, 403, "Forbidden", "Blocked by kiosk policy");
+            }
         }
 
         private void InitializeResetTimer()
@@ -578,10 +566,7 @@ namespace Kiosk.Views
             var message = e.TryGetWebMessageAsString();
             if (message == "closeWindow")
             {
-                // Возвращаемся в главное меню
                 this.Close();
-                var mainWindow = Application.Current.MainWindow as MainWindow;
-                mainWindow?.ShowMainWindow();
             }
             else if (message == "refreshPage")
             {
@@ -597,10 +582,7 @@ namespace Kiosk.Views
         {
             if (e.Key == Key.Escape)
             {
-                // Возвращаемся в главное меню
                 this.Close();
-                var mainWindow = Application.Current.MainWindow as MainWindow;
-                mainWindow?.ShowMainWindow();
             }
             else if (e.Key == Key.F5) // F5 тоже обновляет страницу
             {
@@ -619,35 +601,41 @@ namespace Kiosk.Views
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
+            _resetTimer?.Stop();
+            _sessionCleanerTimer?.Stop();
+
+            // Очищаем данные перед закрытием
             try
             {
-                _resetTimer?.Stop();
-                _sessionCleanerTimer?.Stop();
-
-                // Правильно очищаем WebView2
-                if (webView != null && _isInitialized)
+                if (webView?.CoreWebView2 != null)
                 {
-                    // Отписываемся от всех событий
-                    webView.CoreWebView2.WebMessageReceived -= WebView_WebMessageReceived;
-                    webView.CoreWebView2.DOMContentLoaded -= CoreWebView2_DOMContentLoaded;
-                    webView.NavigationCompleted -= WebView_NavigationCompleted;
-                    webView.NavigationStarting -= WebView_NavigationStarting;
-                    webView.CoreWebView2.SourceChanged -= CoreWebView2_SourceChanged;
-                    webView.CoreWebView2.NewWindowRequested -= CoreWebView2_NewWindowRequested;
-
-                    // Останавливаем навигацию
-                    webView.Stop();
-
-                    // Очищаем источник
-                    webView.Source = null;
-
-                    // Выгружаем содержимое
-                    webView.Dispose();
+                    webView.CoreWebView2.Stop();
                 }
             }
-            catch (Exception ex)
+            catch { }
+
+            // Удаляем временную папку с данными браузера
+            try
             {
-                Console.WriteLine($"Ошибка при закрытии NewsBrowserWindow: {ex.Message}");
+                if (Directory.Exists(_tempUserDataFolder))
+                {
+                    for (int i = 0; i < 3; i++) // Пробуем несколько раз
+                    {
+                        try
+                        {
+                            Directory.Delete(_tempUserDataFolder, true);
+                            break;
+                        }
+                        catch
+                        {
+                            System.Threading.Thread.Sleep(100);
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Игнорируем ошибки удаления
             }
 
             base.OnClosing(e);
@@ -672,3 +660,4 @@ namespace Kiosk.Views
         }
     }
 }
+

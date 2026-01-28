@@ -1,10 +1,7 @@
 ﻿using Microsoft.Web.WebView2.Wpf;
-using System;
-using System.IO;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Threading;
-using Microsoft.Web.WebView2.Core;
+using System.Windows.Input;
 using System.Threading.Tasks;
 
 namespace Kiosk.Views
@@ -14,9 +11,6 @@ namespace Kiosk.Views
         public string DefaultMapUrl = App.Settings.MapUrl;
         private DispatcherTimer _resetTimer;
         private bool _isButtonAdded = false;
-        private static CoreWebView2Environment _sharedEnvironment;
-        private static readonly object _envLock = new object();
-        private bool _isInitialized = false;
 
         public BrowserMap()
         {
@@ -28,14 +22,11 @@ namespace Kiosk.Views
         {
             try
             {
-                // Используем общее окружение WebView2 для всех окон
-                var environment = await GetSharedEnvironment();
+                // Инициализируем WebView2
+                await webView.EnsureCoreWebView2Async(null);
 
-                // Инициализируем WebView2 с общим окружением
-                await webView.EnsureCoreWebView2Async(environment);
-
-                // Настройки для ускорения загрузки и кэширования
-                ConfigureWebViewSettings();
+                // Включаем поддержку сообщений из JavaScript
+                webView.CoreWebView2.Settings.IsWebMessageEnabled = true;
 
                 // Подписываемся на события
                 webView.CoreWebView2.WebMessageReceived += WebView_WebMessageReceived;
@@ -43,74 +34,16 @@ namespace Kiosk.Views
                 webView.NavigationStarting += WebView_NavigationStarting;
 
                 // Загружаем начальную страницу
-                if (!string.IsNullOrEmpty(DefaultMapUrl))
-                {
-                    webView.Source = new Uri(DefaultMapUrl);
-                }
+                webView.Source = new System.Uri(DefaultMapUrl);
 
                 // Настраиваем таймер сброса
                 InitializeResetTimer();
-
-                _isInitialized = true;
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
                 MessageBox.Show($"Ошибка инициализации браузера: {ex.Message}", "Ошибка",
                               MessageBoxButton.OK, MessageBoxImage.Error);
             }
-        }
-
-        private async Task<CoreWebView2Environment> GetSharedEnvironment()
-        {
-            if (_sharedEnvironment == null)
-            {
-                lock (_envLock)
-                {
-                    if (_sharedEnvironment == null)
-                    {
-                        var cacheFolder = Path.Combine(
-                            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                            "KioskApp",
-                            "WebView2Cache",
-                            "Maps");
-
-                        Directory.CreateDirectory(cacheFolder);
-
-                        var task = CoreWebView2Environment.CreateAsync(
-                            browserExecutableFolder: null,
-                            userDataFolder: cacheFolder,
-                            options: new CoreWebView2EnvironmentOptions()
-                            {
-                                AdditionalBrowserArguments =
-                                    "--disk-cache-size=268435456 " +
-                                    "--media-cache-size=268435456 " +
-                                    "--disable-background-networking " +
-                                    "--no-first-run " +
-                                    "--disable-features=TranslateUI"
-                            });
-
-                        _sharedEnvironment = task.GetAwaiter().GetResult();
-                    }
-                }
-            }
-            return _sharedEnvironment;
-        }
-
-        private void ConfigureWebViewSettings()
-        {
-            // Включаем кэширование для ускорения загрузки
-            webView.CoreWebView2.Settings.IsGeneralAutofillEnabled = false;
-            webView.CoreWebView2.Settings.IsPasswordAutosaveEnabled = false;
-            webView.CoreWebView2.Settings.AreBrowserAcceleratorKeysEnabled = false;
-
-            // Включаем аппаратное ускорение для производительности
-            webView.CoreWebView2.Settings.IsReputationCheckingRequired = false;
-
-            // Отключаем ненужные функции для экономии ресурсов
-            webView.CoreWebView2.Settings.IsZoomControlEnabled = false;
-            webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
-            webView.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
-            webView.CoreWebView2.Settings.AreDevToolsEnabled = false;
         }
 
         private async Task AddBackButtonWithJavaScript()
@@ -174,7 +107,7 @@ namespace Kiosk.Views
 
                 await webView.ExecuteScriptAsync(script);
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
                 // Если не удалось добавить кнопку, попробуем еще раз через секунду
                 await Task.Delay(1000);
@@ -182,10 +115,11 @@ namespace Kiosk.Views
             }
         }
 
+
         private void InitializeResetTimer()
         {
             _resetTimer = new DispatcherTimer();
-            _resetTimer.Interval = TimeSpan.FromMinutes(5);
+            _resetTimer.Interval = System.TimeSpan.FromMinutes(5);
             _resetTimer.Tick += async (sender, e) =>
             {
                 await ResetToDefaultPage();
@@ -222,15 +156,15 @@ namespace Kiosk.Views
             }
         }
 
+        
+
         private void WebView_WebMessageReceived(object sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs e)
         {
             var message = e.TryGetWebMessageAsString();
             if (message == "closeWindow")
             {
-                // Возвращаемся в главное меню
+                // Закрываем окно при получении сообщения из JavaScript
                 this.Close();
-                var mainWindow = Application.Current.MainWindow as MainWindow;
-                mainWindow?.ShowMainWindow();
             }
         }
 
@@ -240,41 +174,13 @@ namespace Kiosk.Views
             if (e.Key == Key.Escape)
             {
                 this.Close();
-                var mainWindow = Application.Current.MainWindow as MainWindow;
-                mainWindow?.ShowMainWindow();
             }
             base.OnKeyDown(e);
         }
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
-            try
-            {
-                _resetTimer?.Stop();
-
-                // Правильно очищаем WebView2
-                if (webView != null && _isInitialized)
-                {
-                    // Отписываемся от событий
-                    webView.CoreWebView2.WebMessageReceived -= WebView_WebMessageReceived;
-                    webView.NavigationCompleted -= WebView_NavigationCompleted;
-                    webView.NavigationStarting -= WebView_NavigationStarting;
-
-                    // Останавливаем навигацию
-                    webView.Stop();
-
-                    // Очищаем источник
-                    webView.Source = null;
-
-                    // Выгружаем содержимое
-                    webView.Dispose();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Ошибка при закрытии BrowserMap: {ex.Message}");
-            }
-
+            _resetTimer?.Stop();
             base.OnClosing(e);
         }
     }
