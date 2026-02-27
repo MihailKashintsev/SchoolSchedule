@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -15,176 +15,124 @@ namespace Kiosk.Views
         {
             InitializeComponent();
 
-            // Устанавливаем полноэкранный режим
             WindowState = WindowState.Maximized;
             WindowStyle = WindowStyle.None;
 
-            // Загружаем QR-коды
+            // Версия в статусбаре
+            if (VersionText != null)
+                VersionText.Text = $"Версия {App.Version}";
+
             LoadQrCodes();
 
-            // Устанавливаем текст о разработчиках
-            DeveloperText.Text = @"Проект разработан командой энтузиастов для автоматизации школьного процесса.
-
-Основные возможности:
-• Отображение актуального расписания уроков
-• Показ ежедневных замен
-• Интуитивный интерфейс для сенсорных киосков
-• Автоматическое обновление данных
-• Интеграция с существующими системами
-
-Наша цель - сделать школьную информацию доступной и понятной для учащихся, учителей и родителей.";
+            DeveloperText.Text =
+                "Проект разработан командой энтузиастов для автоматизации школьного процесса.\r\n\r\n" +
+                "Основные возможности:\r\n" +
+                "• Отображение актуального расписания уроков\r\n" +
+                "• Показ ежедневных замен\r\n" +
+                "• Виджет погоды в реальном времени\r\n" +
+                "• Интуитивный интерфейс для сенсорных киосков\r\n" +
+                "• Автоматическое обновление приложения\r\n" +
+                "• Интерактивная карта здания\r\n\r\n" +
+                "Наша цель — сделать школьную информацию доступной и понятной для учащихся, учителей и родителей.";
         }
 
         private void LoadQrCodes()
         {
             try
             {
-                // QR-код 1 - Сайт команды
                 QrCode1Text.Text = "https://rendergames.tilda.ws/";
-                QrCode1Image.Source = LoadImageFromResources("qrcode1.png");
+                QrCode1Image.Source = LoadImage("qrcode1.png");
 
-                // QR-код 2 - Сайт школы
                 QrCode2Text.Text = "https://ligapervihpheniks.tilda.ws/";
-                QrCode2Image.Source = LoadImageFromResources("qrcode2.png");
+                QrCode2Image.Source = LoadImage("qrcode2.png");
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка загрузки QR-кодов: {ex.Message}", "Ошибка",
-                              MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
-        private BitmapImage LoadImageFromResources(string filename)
+        private BitmapImage LoadImage(string filename)
         {
             try
             {
-                var bitmapImage = new BitmapImage();
-                bitmapImage.BeginInit();
-                bitmapImage.UriSource = new Uri($"pack://application:,,,/Images/{filename}");
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapImage.EndInit();
-                return bitmapImage;
+                var img = new BitmapImage();
+                img.BeginInit();
+                img.UriSource = new Uri($"pack://application:,,,/Images/{filename}");
+                img.CacheOption = BitmapCacheOption.OnLoad;
+                img.EndInit();
+                return img;
             }
-            catch (Exception ex)
+            catch
             {
-                // Если файл не найден, создаем placeholder
-                MessageBox.Show($"Не удалось загрузить изображение {filename}: {ex.Message}",
-                              "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return CreatePlaceholderImage();
+                return CreatePlaceholder();
             }
         }
 
-        private BitmapImage CreatePlaceholderImage()
+        private BitmapImage CreatePlaceholder()
         {
-            // Создаем простой placeholder если изображения не найдены
-            var width = 150;
-            var height = 150;
-
-            var renderTarget = new System.Windows.Media.Imaging.RenderTargetBitmap(
-                width, height, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
-
-            var visual = new System.Windows.Media.DrawingVisual();
-            using (var context = visual.RenderOpen())
+            var rt = new RenderTargetBitmap(150, 150, 96, 96, PixelFormats.Pbgra32);
+            var dv = new DrawingVisual();
+            using (var ctx = dv.RenderOpen())
             {
-                // Фон
-                context.DrawRectangle(
-                    System.Windows.Media.Brushes.White,
-                    new System.Windows.Media.Pen(System.Windows.Media.Brushes.LightGray, 1),
-                    new System.Windows.Rect(0, 0, width, height));
-
-                // Текст
-                var text = new System.Windows.Media.FormattedText(
-                    "QR Code\nNot Found",
-                    System.Globalization.CultureInfo.CurrentCulture,
-                    System.Windows.FlowDirection.LeftToRight,
-                    new System.Windows.Media.Typeface("Arial"),
-                    12,
-                    System.Windows.Media.Brushes.Gray,
-                    1.0);
-
-                context.DrawText(text, new System.Windows.Point(10, height / 2 - 10));
+                ctx.DrawRectangle(Brushes.White,
+                    new Pen(Brushes.LightGray, 1), new Rect(0, 0, 150, 150));
+                ctx.DrawText(
+                    new FormattedText("QR\nNot Found",
+                        System.Globalization.CultureInfo.CurrentCulture,
+                        FlowDirection.LeftToRight,
+                        new Typeface("Arial"), 14, Brushes.Gray, 1.0),
+                    new Point(20, 55));
             }
+            rt.Render(dv);
 
-            renderTarget.Render(visual);
-            return ConvertRenderTargetToBitmapImage(renderTarget);
-        }
+            var enc = new PngBitmapEncoder();
+            enc.Frames.Add(BitmapFrame.Create(rt));
+            using var ms = new System.IO.MemoryStream();
+            enc.Save(ms);
+            ms.Seek(0, System.IO.SeekOrigin.Begin);
 
-        private BitmapImage ConvertRenderTargetToBitmapImage(RenderTargetBitmap renderTarget)
-        {
-            var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
-            encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(renderTarget));
-
-            using (var stream = new System.IO.MemoryStream())
-            {
-                encoder.Save(stream);
-                stream.Seek(0, System.IO.SeekOrigin.Begin);
-
-                var bitmapImage = new BitmapImage();
-                bitmapImage.BeginInit();
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapImage.StreamSource = stream;
-                bitmapImage.EndInit();
-                return bitmapImage;
-            }
+            var bmp = new BitmapImage();
+            bmp.BeginInit();
+            bmp.CacheOption = BitmapCacheOption.OnLoad;
+            bmp.StreamSource = ms;
+            bmp.EndInit();
+            return bmp;
         }
 
         private void QrCodeText_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (sender is TextBlock textBlock)
+            if (sender is not TextBlock tb) return;
+            try
             {
-                try
+                Clipboard.SetText(tb.Text);
+                var tip = new ToolTip
                 {
-                    Clipboard.SetText(textBlock.Text);
-
-                    // Показываем сообщение об успешном копировании
-                    var tooltip = new ToolTip
-                    {
-                        Content = "Ссылка скопирована в буфер обмена!",
-                        Background = Brushes.Green,
-                        Foreground = Brushes.White,
-                        Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom
-                    };
-
-                    textBlock.ToolTip = tooltip;
-                    tooltip.IsOpen = true;
-
-                    // Закрываем подсказку через 2 секунды
-                    var timer = new System.Windows.Threading.DispatcherTimer
-                    {
-                        Interval = TimeSpan.FromSeconds(2)
-                    };
-                    timer.Tick += (s, args) =>
-                    {
-                        tooltip.IsOpen = false;
-                        timer.Stop();
-                    };
-                    timer.Start();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Не удалось скопировать ссылку: {ex.Message}", "Ошибка",
-                                  MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                    Content = "Ссылка скопирована!",
+                    Background = Brushes.Green,
+                    Foreground = Brushes.White,
+                    Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom
+                };
+                tb.ToolTip = tip;
+                tip.IsOpen = true;
+                var t = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+                t.Tick += (s, _) => { tip.IsOpen = false; t.Stop(); };
+                t.Start();
             }
+            catch { }
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            var mainWindow = new MainWindow();
-            mainWindow.Show();
-            this.Close();
+            new MainWindow().Show();
+            Close();
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.F11)
-            {
-                ToggleFullScreen();
-            }
-            else if (e.Key == Key.Escape)
-            {
-                BackButton_Click(sender, e);
-            }
+            if (e.Key == Key.F11) ToggleFullScreen();
+            else if (e.Key == Key.Escape) BackButton_Click(sender, e);
         }
 
         private void ToggleFullScreen()

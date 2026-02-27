@@ -137,9 +137,10 @@
 
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>    <!-- Логотип -->
+                        <ColumnDefinition Width="*"/>       <!-- Название школы -->
+                        <ColumnDefinition Width="Auto"/>    <!-- Погода -->
+                        <ColumnDefinition Width="Auto"/>    <!-- Время + кнопка -->
                     </Grid.ColumnDefinitions>
 
                     <!-- Логотип -->
@@ -167,9 +168,77 @@
                                    TextWrapping="Wrap"/>
                     </StackPanel>
 
+                    <!-- ВИДЖЕТ ПОГОДЫ -->
+                    <Border x:Name="WeatherPanel" Grid.Column="2"
+                            CornerRadius="18" Margin="20,0" Padding="18,12"
+                            VerticalAlignment="Center" MinWidth="200"
+                            BorderThickness="1" Visibility="Collapsed">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#0C2248" Offset="0"/>
+                                <GradientStop Color="#081830" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Border.BorderBrush>
+                            <SolidColorBrush Color="#1E4DB7" Opacity="0.5"/>
+                        </Border.BorderBrush>
+                        <Border.Effect>
+                            <DropShadowEffect Color="#1E4DB7" Opacity="0.3"
+                                              BlurRadius="18" ShadowDepth="0"/>
+                        </Border.Effect>
+
+                        <Grid>
+                            <!-- Показывается пока грузится -->
+                            <TextBlock x:Name="WeatherLoadingText"
+                                       Text="Загрузка погоды..."
+                                       Foreground="#3A5A80" FontSize="13"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                            <!-- Контент после загрузки -->
+                            <StackPanel x:Name="WeatherContent" Visibility="Collapsed">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Эмодзи погоды -->
+                                    <TextBlock x:Name="WeatherEmoji" Grid.Column="0"
+                                               Text="🌤️" FontSize="48"
+                                               VerticalAlignment="Center" Margin="0,0,14,0"
+                                               FontFamily="Segoe UI Emoji, Segoe UI, sans-serif"/>
+
+                                    <!-- Температура и описание -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock x:Name="WeatherTemp"
+                                                   Text="+5°C"
+                                                   FontSize="34" FontWeight="Bold"
+                                                   Foreground="#4FC3F7"
+                                                   FontFamily="Segoe UI, sans-serif"/>
+                                        <TextBlock x:Name="WeatherDesc"
+                                                   Text="Переменная облачность"
+                                                   FontSize="13" Foreground="#CBD5E0"
+                                                   FontFamily="Segoe UI Emoji, Segoe UI, sans-serif"/>
+                                        <TextBlock x:Name="WeatherCity"
+                                                   Text=""
+                                                   FontSize="11" Foreground="#3A5A80"
+                                                   FontFamily="Segoe UI, sans-serif"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Детали: ощущается, ветер, влажность -->
+                                <TextBlock x:Name="WeatherDetails"
+                                           Text="Ощущается +3°  ·  Ветер 3 м/с  ·  Влажность 72%"
+                                           FontSize="11" Foreground="#3A5A80"
+                                           Margin="0,8,0,0" TextWrapping="Wrap"
+                                           FontFamily="Segoe UI, sans-serif"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
                     <!-- Время, дата и кнопка настроек -->
-                    <StackPanel Grid.Column="2" VerticalAlignment="Center"
-                                HorizontalAlignment="Right" Margin="20,0,0,0">
+                    <StackPanel Grid.Column="3" VerticalAlignment="Center"
+                                HorizontalAlignment="Right" Margin="0,0,0,0">
                         <Border CornerRadius="14" Padding="22,8" Margin="0,0,0,8"
                                 BorderThickness="2">
                             <Border.Background>

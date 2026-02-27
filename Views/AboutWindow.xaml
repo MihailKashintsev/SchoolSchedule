@@ -247,7 +247,7 @@
                         <Border Background="#122840" CornerRadius="10" Padding="16,12"
                                 Margin="0,0,0,8" BorderThickness="1">
                             <Border.BorderBrush><SolidColorBrush Color="#1E4DB7"/></Border.BorderBrush>
-                            <TextBlock Text="• Платформа: .NET Framework 4.8"
+                            <TextBlock Text="• Платформа: .NET 8 (self-contained)"
                                        FontSize="17" Foreground="#C8D8EA"/>
                         </Border>
                         <Border Background="#122840" CornerRadius="10" Padding="16,12"
@@ -276,9 +276,21 @@
 
         <!-- Статусбар -->
         <Border Grid.Row="2" Padding="28,10" Background="#0A1628">
-            <TextBlock Text="© RENDERGAMES • Школьный киоск"
-                       Foreground="#2A4A6A" FontSize="13"
-                       VerticalAlignment="Center" HorizontalAlignment="Right"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="VersionText"
+                           Grid.Column="0"
+                           Foreground="#2A4A6A" FontSize="13"
+                           VerticalAlignment="Center"
+                           FontFamily="Segoe UI, sans-serif"/>
+                <TextBlock Grid.Column="1"
+                           Text="© RENDERGAMES • Школьный киоск"
+                           Foreground="#2A4A6A" FontSize="13"
+                           VerticalAlignment="Center" HorizontalAlignment="Right"/>
+            </Grid>
         </Border>
 
     </Grid>

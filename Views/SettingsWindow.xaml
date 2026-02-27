@@ -1,221 +1,212 @@
-﻿<Window x:Class="Kiosk.SettingsWindow"
+<Window x:Class="Kiosk.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Настройки"
-        Height="600"
-        Width="500"
+        Height="700"
+        Width="530"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize">
+        ResizeMode="NoResize"
+        Background="#0D1B2A">
 
-    <Grid Margin="15">
+    <Window.Resources>
+        <Style TargetType="GroupBox">
+            <Setter Property="Foreground" Value="#4FC3F7"/>
+            <Setter Property="BorderBrush" Value="#1E3A5F"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#CBD5E0"/>
+            <Setter Property="FontFamily" Value="Segoe UI Emoji, Segoe UI, sans-serif"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#1A2F4A"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#1E4DB7"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="CaretBrush" Value="White"/>
+            <Setter Property="FontFamily" Value="Segoe UI, sans-serif"/>
+        </Style>
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="#CBD5E0"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#1E4DB7"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="12,8"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0"
-                   Text="Настройки приложения"
-                   FontSize="18"
-                   FontWeight="Bold"
-                   HorizontalAlignment="Center"
-                   Margin="0,0,0,20"/>
+        <!-- Заголовок -->
+        <Border Grid.Row="0" Background="#0A1628" Padding="20,14">
+            <Border.Effect>
+                <DropShadowEffect Color="#000" Opacity="0.5" BlurRadius="16" ShadowDepth="4" Direction="270"/>
+            </Border.Effect>
+            <TextBlock Text="Настройки приложения"
+                       FontSize="22" FontWeight="Bold" Foreground="White"
+                       HorizontalAlignment="Center"
+                       FontFamily="Segoe UI Emoji, Segoe UI, sans-serif"/>
+        </Border>
 
-        <ScrollViewer Grid.Row="1"
-                      VerticalScrollBarVisibility="Auto"
+        <!-- Контент -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
-                      PanningMode="VerticalOnly"
-                      Padding="0,0,5,0">
+                      PanningMode="VerticalOnly" Padding="16,12,16,6">
             <StackPanel>
 
                 <!-- Название школы -->
-                <GroupBox Header="Название школы" Margin="0,0,0,15">
+                <GroupBox Header="Название школы">
                     <StackPanel>
-                        <TextBlock Text="Полное наименование учреждения:"
-                                   Margin="0,5,0,3"
-                                   FontSize="14"/>
-                        <TextBox x:Name="SchoolFullNameBox"
-                                 Margin="0,0,0,8"
-                                 MinHeight="35"
-                                 FontSize="14"
-                                 TextWrapping="Wrap"/>
-                        <TextBlock Text="Краткое название (отображается крупно на главном экране):"
-                                   Margin="0,0,0,3"
-                                   FontSize="14"/>
-                        <TextBox x:Name="SchoolShortNameBox"
-                                 Margin="0,0,0,5"
-                                 MinHeight="35"
-                                 FontSize="14"
-                                 TextWrapping="Wrap"/>
+                        <TextBlock Text="Полное наименование учреждения:" Margin="0,3,0,4"/>
+                        <TextBox x:Name="SchoolFullNameBox" MinHeight="34" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                        <TextBlock Text="Краткое название (отображается крупно на главном экране):" Margin="0,0,0,4"/>
+                        <TextBox x:Name="SchoolShortNameBox" MinHeight="34" TextWrapping="Wrap"/>
                     </StackPanel>
                 </GroupBox>
 
-                <GroupBox Header="Путь к файлу расписания" Margin="0,0,0,15">
+                <!-- Погода -->
+                <GroupBox Header="Погода на главном экране">
                     <StackPanel>
-                        <TextBox x:Name="SchedulePathTextBox"
-                                 Margin="0,5"
-                                 MinHeight="35"
-                                 FontSize="14"/>
-                        <Button Content="Выбрать файл..."
-                                Click="BrowsePathButton_Click"
-                                Margin="0,5"
-                                MinHeight="40"
-                                FontSize="14"
-                                Padding="10,8"/>
+                        <CheckBox x:Name="WeatherEnabledCheckBox"
+                                  Content="Показывать виджет погоды"
+                                  Margin="0,3,0,10"
+                                  Checked="WeatherEnabledCheckBox_Changed"
+                                  Unchecked="WeatherEnabledCheckBox_Changed"/>
+
+                        <TextBlock Text="Название города (для отображения):" Margin="0,0,0,4"/>
+                        <TextBox x:Name="WeatherCityBox" MinHeight="34" Margin="0,0,0,10"
+                                 ToolTip="Например: Москва. Оставьте пустым чтобы использовать автоопределение."/>
+
+                        <TextBlock Margin="0,0,0,6"
+                                   Text="Координаты (заполните только если автоопределение по IP неточное):"/>
+                        <Grid Margin="0,0,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Широта (lat):" FontSize="11" Opacity="0.7" Margin="0,0,0,3"/>
+                                <TextBox x:Name="WeatherLatBox" MinHeight="34"
+                                         ToolTip="Пример: 55.7558 (для Москвы)"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Долгота (lon):" FontSize="11" Opacity="0.7" Margin="0,0,0,3"/>
+                                <TextBox x:Name="WeatherLonBox" MinHeight="34"
+                                         ToolTip="Пример: 37.6173 (для Москвы)"/>
+                            </StackPanel>
+                        </Grid>
+                        <TextBlock FontSize="11" Foreground="#4A6FA5" TextWrapping="Wrap" Margin="0,4,0,0"
+                                   Text="Координаты можно найти на maps.yandex.ru или google.com/maps — нажмите правой кнопкой на точку и скопируйте координаты"/>
                     </StackPanel>
                 </GroupBox>
 
-                <GroupBox Header="Ссылка на сайт с картой" Margin="0,0,0,15">
+                <!-- Файл расписания -->
+                <GroupBox Header="Файл расписания">
                     <StackPanel>
-                        <TextBox x:Name="MapUrl"
-                                 Margin="0,5"
-                                 MinHeight="35"
-                                 FontSize="14"/>
+                        <TextBox x:Name="SchedulePathTextBox" MinHeight="34" Margin="0,3,0,6"/>
+                        <Button Content="Выбрать файл..." Click="BrowsePathButton_Click" MinHeight="36"/>
                     </StackPanel>
                 </GroupBox>
 
-                <GroupBox Header="Ссылка для новостей" Margin="0,0,0,15">
-                    <StackPanel>
-                        <TextBox x:Name="NewsUrl"
-                                 Margin="0,5"
-                                 MinHeight="35"
-                                 FontSize="14"/>
-                    </StackPanel>
+                <!-- Карта -->
+                <GroupBox Header="Ссылка на карту здания">
+                    <TextBox x:Name="MapUrl" MinHeight="34" Margin="0,3,0,0"/>
                 </GroupBox>
 
-                <GroupBox Header="Безопасность" Margin="0,0,0,15">
+                <!-- Новости -->
+                <GroupBox Header="Ссылка для новостей">
+                    <TextBox x:Name="NewsUrl" MinHeight="34" Margin="0,3,0,0"/>
+                </GroupBox>
+
+                <!-- Безопасность -->
+                <GroupBox Header="Безопасность">
                     <StackPanel>
                         <Button Content="Сменить пароль администратора"
-                                Click="ChangePasswordButton_Click"
-                                Margin="0,5"
-                                MinHeight="40"
-                                FontSize="14"
-                                Padding="10,8"/>
+                                Click="ChangePasswordButton_Click" MinHeight="36" Margin="0,3,0,8"/>
                         <CheckBox x:Name="ShowKeyboardCheckBox"
                                   Content="Показывать экранную клавиатуру для ввода пароля"
-                                  Margin="0,5"
-                                  FontSize="14"
-                                  MinHeight="30"/>
+                                  MinHeight="28"/>
                     </StackPanel>
                 </GroupBox>
 
-                <GroupBox Header="Файл замен" Margin="0,15,0,15">
+                <!-- Файл замен -->
+                <GroupBox Header="Файл замен (.docx)">
                     <StackPanel>
-                        <TextBlock Text="Путь к файлу замен (.docx):" 
-                                   Margin="0,0,0,5"
-                                   FontSize="14"/>
-                        <Grid>
+                        <Grid Margin="0,3,0,6">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="ReplacementsPathTextBox"
-                                     FontSize="14"
-                                     Margin="0,0,10,0"
-                                     MinHeight="35"/>
-                            <Button Grid.Column="1" 
-                                    Content="Обзор..." 
-                                    Background="#2c5f9e"
-                                    Foreground="White"
-                                    FontSize="14"
-                                    Click="BrowseReplacementsPath_Click"
-                                    Padding="15,8"
-                                    MinHeight="35"
-                                    MinWidth="80"/>
+                            <TextBox x:Name="ReplacementsPathTextBox" MinHeight="34" Margin="0,0,8,0"/>
+                            <Button Grid.Column="1" Content="Обзор..." MinHeight="34" MinWidth="80"
+                                    Click="BrowseReplacementsPath_Click"/>
                         </Grid>
-                        <TextBlock Text="Файл замен должен быть в формате DOCX и обновляться ежедневно"
-                                   FontSize="11"
-                                   Foreground="#6c757d"
-                                   TextWrapping="Wrap"
-                                   Margin="0,5,0,0"/>
+                        <TextBlock FontSize="11" Foreground="#4A6FA5" TextWrapping="Wrap"
+                                   Text="Файл замен должен быть в формате DOCX и обновляться ежедневно"/>
                     </StackPanel>
                 </GroupBox>
 
-                <GroupBox Header="Баннеры (экран заставки)" Margin="0,15,0,15">
+                <!-- Баннеры -->
+                <GroupBox Header="Баннеры (экран заставки)">
                     <StackPanel>
                         <CheckBox x:Name="EnableBannersCheckBox"
                                   Content="Включить режим баннеров"
-                                  Margin="0,5"
-                                  FontSize="14"
-                                  MinHeight="30"
+                                  Margin="0,3,0,10"
                                   Checked="EnableBannersCheckBox_Changed"
                                   Unchecked="EnableBannersCheckBox_Changed"/>
-
-                        <TextBlock Text="Файлы баннеров (.png, разделенные ;):" 
-                                   Margin="0,10,0,5"
-                                   FontSize="14"/>
-                        <Grid>
+                        <Grid Margin="0,0,0,8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="BannerPathsTextBox"
-                                     FontSize="14"
-                                     Margin="0,0,10,0"
-                                     MinHeight="35"/>
-                            <Button Grid.Column="1" 
-                                    Content="Обзор..." 
-                                    Background="#2c5f9e"
-                                    Foreground="White"
-                                    FontSize="14"
-                                    Click="BrowseBannerPaths_Click"
-                                    Padding="15,8"
-                                    MinHeight="35"
-                                    MinWidth="80"/>
+                            <TextBox x:Name="BannerPathsTextBox" MinHeight="34" Margin="0,0,8,0"
+                                     ToolTip="Пути к PNG-файлам, разделённые точкой с запятой"/>
+                            <Button Grid.Column="1" Content="Обзор..." MinHeight="34" MinWidth="80"
+                                    Click="BrowseBannerPaths_Click"/>
                         </Grid>
-
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,10,0,5">
-                            <TextBlock Text="Время до показа баннеров (сек):"
-                                       VerticalAlignment="Center"
-                                       Margin="0,0,10,0"
-                                       FontSize="14"/>
-                            <TextBox x:Name="BannerTimeoutTextBox"
-                                     Width="80"
-                                     MinHeight="35"
-                                     Text="30"
-                                     FontSize="14"
-                                     VerticalContentAlignment="Center"/>
-                        </StackPanel>
-
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,5,0,0">
-                            <TextBlock Text="Время переключения баннеров (сек):"
-                                       VerticalAlignment="Center"
-                                       Margin="0,0,10,0"
-                                       FontSize="14"/>
-                            <TextBox x:Name="BannerSwitchIntervalTextBox"
-                                     Width="80"
-                                     MinHeight="35"
-                                     Text="5"
-                                     FontSize="14"
-                                     VerticalContentAlignment="Center"/>
-                        </StackPanel>
-
-                        <TextBlock Text="Укажите пути к PNG файлам через точку с запятой или используйте кнопку 'Обзор'"
-                                   FontSize="11"
-                                   Foreground="#6c757d"
-                                   TextWrapping="Wrap"
-                                   Margin="0,10,0,0"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="До показа баннеров (сек):" FontSize="11" Opacity="0.7" Margin="0,0,0,3"/>
+                                <TextBox x:Name="BannerTimeoutTextBox" MinHeight="34" Text="30"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Смена баннера (сек):" FontSize="11" Opacity="0.7" Margin="0,0,0,3"/>
+                                <TextBox x:Name="BannerSwitchIntervalTextBox" MinHeight="34" Text="5"/>
+                            </StackPanel>
+                        </Grid>
                     </StackPanel>
                 </GroupBox>
 
-                <GroupBox Header="Автообновление">
+                <!-- Автообновление -->
+                <GroupBox Header="Автообновление данных">
                     <StackPanel>
                         <CheckBox x:Name="AutoRefreshCheckBox"
                                   Content="Автоматически обновлять расписание"
-                                  Margin="0,5"
-                                  FontSize="14"
-                                  MinHeight="30"/>
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Интервал (секунды):"
-                                       VerticalAlignment="Center"
-                                       Margin="0,0,10,0"
-                                       FontSize="14"/>
-                            <TextBox x:Name="RefreshIntervalTextBox"
-                                     Width="80"
-                                     MinHeight="35"
-                                     Text="300"
-                                     FontSize="14"
-                                     VerticalContentAlignment="Center"/>
+                                  Margin="0,3,0,8" MinHeight="28"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Интервал (секунды):" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBox x:Name="RefreshIntervalTextBox" Width="80" MinHeight="34" Text="300"/>
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
@@ -223,20 +214,31 @@
             </StackPanel>
         </ScrollViewer>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
-            <Button Content="Сохранить"
-                    Width="100"
-                    Height="40"
-                    Margin="0,0,10,0"
-                    Click="SaveButton_Click"
-                    FontSize="14"
-                    Padding="10,8"/>
-            <Button Content="Отмена"
-                    Width="100"
-                    Height="40"
-                    Click="CancelButton_Click"
-                    FontSize="14"
-                    Padding="10,8"/>
-        </StackPanel>
+        <!-- Нижняя панель: версия + кнопки -->
+        <Border Grid.Row="2" Background="#0A1628" Padding="16,10">
+            <Border.Effect>
+                <DropShadowEffect Color="#000" Opacity="0.4" BlurRadius="14" ShadowDepth="0"/>
+            </Border.Effect>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Версия слева -->
+                <TextBlock x:Name="VersionLabel" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           FontSize="12" Foreground="#2A4A6A"
+                           FontFamily="Segoe UI, sans-serif"/>
+
+                <!-- Кнопки справа -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Content="Сохранить" Width="120" Height="38"
+                            Margin="0,0,10,0" Click="SaveButton_Click"/>
+                    <Button Content="Отмена" Width="90" Height="38"
+                            Background="#1A2F4A" Click="CancelButton_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </Window>

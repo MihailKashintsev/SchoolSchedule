@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -21,6 +22,7 @@ namespace Kiosk
         private DispatcherTimer _aiTimer;
         private DispatcherTimer _idleTimer;
         private DispatcherTimer _bannerTimer;
+        private DispatcherTimer _weatherTimer;
         private bool _isFullScreen = true;
         private ScheduleData _scheduleData;
         private ReplacementData _replacementData;
@@ -48,7 +50,13 @@ namespace Kiosk
             LoadData();
             LoadBannerSettings();
 
-            // Устанавливаем обработчики событий пользовательской активности
+            // Загружаем погоду
+            if (App.Settings.WeatherEnabled)
+            {
+                WeatherPanel.Visibility = Visibility.Visible;
+                _ = LoadWeatherAsync();
+            }
+
             this.PreviewMouseMove += Window_PreviewMouseMove;
             this.PreviewMouseDown += Window_PreviewMouseDown;
             this.PreviewKeyDown += Window_PreviewKeyDown;
@@ -56,144 +64,106 @@ namespace Kiosk
             this.PreviewTouchMove += Window_PreviewTouchMove;
             Loaded += MainWindow_Loaded;
 
-            // Начальное время активности
             _lastUserActivity = DateTime.Now;
-
-            // Set fullscreen mode
             WindowState = WindowState.Maximized;
             WindowStyle = WindowStyle.None;
         }
 
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        // ─── Погода ───────────────────────────────────────────────────────────
+
+        private async Task LoadWeatherAsync()
         {
-            // Создаем и запускаем анимации для кнопок
-            CreateButtonAnimations();
-            // Загружаем названия школы из настроек
-            UpdateSchoolNames();
+            WeatherLoadingText.Visibility = Visibility.Visible;
+            WeatherContent.Visibility = Visibility.Collapsed;
+
+            var info = await WeatherService.GetWeatherAsync(
+                App.Settings.WeatherLat,
+                App.Settings.WeatherLon,
+                string.IsNullOrWhiteSpace(App.Settings.WeatherCity) ? null : App.Settings.WeatherCity
+            );
+
+            if (!info.IsLoaded)
+            {
+                WeatherLoadingText.Text = "Нет данных";
+                return;
+            }
+
+            WeatherLoadingText.Visibility = Visibility.Collapsed;
+            WeatherContent.Visibility = Visibility.Visible;
+
+            WeatherEmoji.Text = info.WeatherEmoji;
+            WeatherTemp.Text = $"{info.Temperature:+0;-0;0}°C";
+            WeatherDesc.Text = info.WeatherDescription;
+            WeatherCity.Text = info.CityName;
+            WeatherDetails.Text =
+                $"Ощущается {info.FeelsLike:+0;-0;0}°  ·  Ветер {info.WindSpeed} м/с  ·  Влажность {info.Humidity}%";
         }
 
-        public void UpdateSchoolNames()
+        // ─── Анимации кнопок ─────────────────────────────────────────────────
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            if (FindName("SchoolFullNameText") is System.Windows.Controls.TextBlock fullNameBlock)
-                fullNameBlock.Text = App.Settings.SchoolFullName;
-            if (FindName("SchoolShortNameText") is System.Windows.Controls.TextBlock shortNameBlock)
-                shortNameBlock.Text = App.Settings.SchoolShortName;
+            CreateButtonAnimations();
         }
 
         private void CreateButtonAnimations()
         {
-            // Анимация для кнопки "Расписание" (синяя)
             _scheduleBrush = CreateAnimatedBrush(
-                Color.FromRgb(44, 95, 158),   // Темно-синий (#2c5f9e)
-                Color.FromRgb(52, 152, 219),  // Светло-синий (#3498db)
-                Color.FromRgb(41, 128, 185),  // Синий (#2980b9)
-                Color.FromRgb(26, 74, 122)    // Очень темно-синий (#1a4a7a)
-            );
-
-            // Применяем анимированную кисть к кнопке "Расписание"
+                Color.FromRgb(44, 95, 158), Color.FromRgb(52, 152, 219),
+                Color.FromRgb(41, 128, 185), Color.FromRgb(26, 74, 122));
             if (ScheduleButton.Template.FindName("border", ScheduleButton) is Border scheduleBorder)
-            {
                 scheduleBorder.Background = _scheduleBrush;
-            }
 
-            // Анимация для кнопки "Замены" (оранжевая лава)
             _replacementsBrush = CreateAnimatedBrush(
-                Color.FromRgb(255, 230, 126),  // Светло-оранжевый (#FFE67E)
-                Color.FromRgb(255, 165, 0),    // Оранжевый (#FFA500)
-                Color.FromRgb(255, 69, 0),     // Красный (#FF4500)
-                Color.FromRgb(255, 215, 0)     // Золотой (#FFD700)
-            );
-
-            // Применяем анимированную кисть к кнопке "Замены"
+                Color.FromRgb(255, 230, 126), Color.FromRgb(255, 165, 0),
+                Color.FromRgb(255, 69, 0), Color.FromRgb(255, 215, 0));
             if (ReplacementsButton.Template.FindName("border", ReplacementsButton) is Border replacementsBorder)
-            {
                 replacementsBorder.Background = _replacementsBrush;
-            }
 
-            // Анимация для кнопки "О проекте" (фиолетово-красная)
             _aboutBrush = CreateAnimatedBrush(
-                Color.FromRgb(155, 89, 182),   // Фиолетовый (#9b59b6)
-                Color.FromRgb(231, 76, 60),    // Красный (#e74c3c)
-                Color.FromRgb(243, 156, 18),   // Оранжевый (#f39c12)
-                Color.FromRgb(142, 68, 173)    // Темно-фиолетовый (#8e44ad)
-            );
-
+                Color.FromRgb(155, 89, 182), Color.FromRgb(231, 76, 60),
+                Color.FromRgb(243, 156, 18), Color.FromRgb(142, 68, 173));
             if (AboutButton.Template.FindName("border", AboutButton) is Border aboutBorder)
-            {
                 aboutBorder.Background = _aboutBrush;
-            }
 
-            // Анимация для кнопки "Карта здания" (зелено-синяя)
             _mapBrush = CreateAnimatedBrush(
-                Color.FromRgb(39, 174, 96),    // Зеленый (#27ae60)
-                Color.FromRgb(46, 204, 113),   // Светло-зеленый (#2ecc71)
-                Color.FromRgb(52, 152, 219),   // Синий (#3498db)
-                Color.FromRgb(34, 153, 84)     // Темно-зеленый (#229954)
-            );
-
+                Color.FromRgb(39, 174, 96), Color.FromRgb(46, 204, 113),
+                Color.FromRgb(52, 152, 219), Color.FromRgb(34, 153, 84));
             if (MapBrowserButton.Template.FindName("border", MapBrowserButton) is Border mapBorder)
-            {
                 mapBorder.Background = _mapBrush;
-            }
 
-            // Анимация для кнопки "Новости" (сине-фиолетовая)
             _newsBrush = CreateAnimatedBrush(
-                Color.FromRgb(67, 97, 238),    // Синий (#4361ee)
-                Color.FromRgb(58, 12, 163),    // Темно-синий (#3a0ca3)
-                Color.FromRgb(114, 9, 183),    // Фиолетовый (#7209b7)
-                Color.FromRgb(247, 37, 133)    // Розовый (#f72585)
-            );
-
+                Color.FromRgb(67, 97, 238), Color.FromRgb(58, 12, 163),
+                Color.FromRgb(114, 9, 183), Color.FromRgb(247, 37, 133));
             if (News.Template.FindName("border", News) is Border newsBorder)
-            {
                 newsBorder.Background = _newsBrush;
-            }
         }
 
-        private LinearGradientBrush CreateAnimatedBrush(Color color1, Color color2, Color color3, Color color4)
+        private LinearGradientBrush CreateAnimatedBrush(Color c1, Color c2, Color c3, Color c4)
         {
-            // Создаем градиентную кисть
-            LinearGradientBrush brush = new LinearGradientBrush
-            {
-                StartPoint = new Point(0, 0),
-                EndPoint = new Point(1, 1)
-            };
-
-            // Создаем градиентные остановки
-            GradientStop stop1 = new GradientStop(color1, 0);
-            GradientStop stop2 = new GradientStop(color1, 0.5);
-            GradientStop stop3 = new GradientStop(color3, 1);
-
+            var brush = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(1, 1) };
+            var stop1 = new GradientStop(c1, 0);
+            var stop2 = new GradientStop(c1, 0.5);
+            var stop3 = new GradientStop(c3, 1);
             brush.GradientStops.Add(stop1);
             brush.GradientStops.Add(stop2);
             brush.GradientStops.Add(stop3);
 
-            // Создаем анимации
-            ColorAnimation animation1 = new ColorAnimation
+            stop1.BeginAnimation(GradientStop.ColorProperty, new ColorAnimation
             {
-                From = color1,
-                To = color2,
-                Duration = TimeSpan.FromSeconds(2),
-                AutoReverse = true,
-                RepeatBehavior = RepeatBehavior.Forever
-            };
-
-            ColorAnimation animation2 = new ColorAnimation
+                From = c1, To = c2, Duration = TimeSpan.FromSeconds(2),
+                AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever
+            });
+            stop2.BeginAnimation(GradientStop.ColorProperty, new ColorAnimation
             {
-                From = color3,
-                To = color4,
-                Duration = TimeSpan.FromSeconds(3),
+                From = c3, To = c4, Duration = TimeSpan.FromSeconds(3),
                 BeginTime = TimeSpan.FromSeconds(1),
-                AutoReverse = true,
-                RepeatBehavior = RepeatBehavior.Forever
-            };
-
-            // Запускаем анимации
-            stop1.BeginAnimation(GradientStop.ColorProperty, animation1);
-            stop2.BeginAnimation(GradientStop.ColorProperty, animation2);
-
+                AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever
+            });
             return brush;
         }
+
+        // ─── Баннеры ─────────────────────────────────────────────────────────
 
         private void LoadBannerSettings()
         {
@@ -205,22 +175,14 @@ namespace Kiosk
                     .ToList();
 
                 _bannerImages.Clear();
-
                 foreach (var path in paths)
                 {
                     if (File.Exists(path))
-                    {
                         _bannerImages.Add(path);
-                    }
                     else
                     {
-                        // Попробуем найти файл в папке приложения
-                        var fileName = Path.GetFileName(path);
-                        var appPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName);
-                        if (File.Exists(appPath))
-                        {
-                            _bannerImages.Add(appPath);
-                        }
+                        var appPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Path.GetFileName(path));
+                        if (File.Exists(appPath)) _bannerImages.Add(appPath);
                     }
                 }
 
@@ -233,48 +195,46 @@ namespace Kiosk
             }
         }
 
+        // ─── Таймеры ─────────────────────────────────────────────────────────
+
         private void InitializeTimers()
         {
-            // Таймер для обновления времени
-            _timer = new DispatcherTimer();
-            _timer.Interval = TimeSpan.FromSeconds(1);
-            _timer.Tick += Timer_Tick;
+            _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            _timer.Tick += (s, e) => UpdateDateTime();
             _timer.Start();
 
-            // Таймер для обновления информации от ИИ
-            _aiTimer = new DispatcherTimer();
-            _aiTimer.Interval = TimeSpan.FromSeconds(10);
-            _aiTimer.Tick += AITimer_Tick;
+            _aiTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
+            _aiTimer.Tick += (s, e) => UpdateAssistantInfo();
             _aiTimer.Start();
 
-            // Таймер бездействия для показа баннеров
             _idleTimer = new DispatcherTimer();
             _idleTimer.Tick += IdleTimer_Tick;
 
-            // Таймер переключения баннеров
             _bannerTimer = new DispatcherTimer();
             _bannerTimer.Tick += BannerTimer_Tick;
+
+            // Погода обновляется каждые 15 минут
+            _weatherTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(15) };
+            _weatherTimer.Tick += async (s, e) =>
+            {
+                if (App.Settings.WeatherEnabled) await LoadWeatherAsync();
+            };
+            _weatherTimer.Start();
         }
 
         private void ResetIdleTimer()
         {
             if (_isBannerMode) return;
-
             _lastUserActivity = DateTime.Now;
             _idleTimer.Stop();
-
             if (_bannerImages.Count > 0 && App.Settings.EnableBanners)
-            {
                 _idleTimer.Start();
-            }
         }
 
         private void IdleTimer_Tick(object sender, EventArgs e)
         {
             if ((DateTime.Now - _lastUserActivity).TotalSeconds >= App.Settings.BannerTimeout)
-            {
                 StartBannerMode();
-            }
         }
 
         private void BannerTimer_Tick(object sender, EventArgs e)
@@ -285,202 +245,55 @@ namespace Kiosk
         private async void StartBannerMode()
         {
             if (_bannerImages.Count == 0 || _isBannerMode) return;
-
             _isBannerMode = true;
             _idleTimer.Stop();
 
-            // Показываем баннер с плавной анимацией
-            BannerGrid.Visibility = Visibility.Visible;
-            _currentBannerIndex = 0;
-
-            // Плавное появление баннера с затемнением
-            var fadeInAnimation = new DoubleAnimation
-            {
-                From = 0,
-                To = 1,
-                Duration = TimeSpan.FromSeconds(0.5),
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
-            };
-
-            BannerGrid.BeginAnimation(OpacityProperty, fadeInAnimation);
-
             // Показываем первый баннер
-            await ShowCurrentBannerWithAnimation();
+            _currentBannerIndex = 0;
+            ShowBanner(_bannerImages[_currentBannerIndex]);
+            BannerOverlay.Visibility = Visibility.Visible;
 
-            // Запускаем таймер переключения
+            var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(500));
+            BannerOverlay.BeginAnimation(UIElement.OpacityProperty, fadeIn);
+
             _bannerTimer.Start();
+            await Task.CompletedTask;
         }
 
         private async void ExitBannerMode()
         {
-            if (!_isBannerMode) return;
-
-            _isBannerMode = false;
             _bannerTimer.Stop();
-
-            // Плавное исчезновение баннера
-            var fadeOutAnimation = new DoubleAnimation
-            {
-                From = 1,
-                To = 0,
-                Duration = TimeSpan.FromSeconds(0.3),
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
-            };
-
-            fadeOutAnimation.Completed += (s, e) =>
-            {
-                BannerGrid.Visibility = Visibility.Collapsed;
-                BannerImage.Source = null; // Очищаем изображение
-                BannerGrid.Opacity = 0;
-            };
-
-            BannerGrid.BeginAnimation(OpacityProperty, fadeOutAnimation);
-
-            // Сбрасываем таймер бездействия
-            ResetIdleTimer();
+            var fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(300));
+            BannerOverlay.BeginAnimation(UIElement.OpacityProperty, fadeOut);
+            await Task.Delay(300);
+            BannerOverlay.Visibility = Visibility.Collapsed;
+            _isBannerMode = false;
+            _lastUserActivity = DateTime.Now;
+            if (_bannerImages.Count > 0 && App.Settings.EnableBanners)
+                _idleTimer.Start();
         }
 
-        private async System.Threading.Tasks.Task ShowCurrentBannerWithAnimation()
+        private void ShowNextBannerWithAnimation()
         {
-            if (_currentBannerIndex < 0 || _currentBannerIndex >= _bannerImages.Count) return;
+            _currentBannerIndex = (_currentBannerIndex + 1) % _bannerImages.Count;
+            ShowBanner(_bannerImages[_currentBannerIndex]);
+        }
 
+        private void ShowBanner(string path)
+        {
             try
             {
-                // Анимация исчезновения текущего баннера (если он есть)
-                if (BannerImage.Source != null)
-                {
-                    var fadeOut = new DoubleAnimation
-                    {
-                        From = BannerImage.Opacity,
-                        To = 0,
-                        Duration = TimeSpan.FromSeconds(0.3),
-                        EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
-                    };
-
-                    BannerImage.BeginAnimation(OpacityProperty, fadeOut);
-
-                    // Ждем завершения анимации
-                    await System.Threading.Tasks.Task.Delay(300);
-                }
-
-                // Загружаем новое изображение
-                var bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.UriSource = new Uri(_bannerImages[_currentBannerIndex], UriKind.RelativeOrAbsolute);
-                bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-                bitmap.EndInit();
-                bitmap.Freeze();
-
-                // Применяем изображение
-                BannerImage.Source = bitmap;
-
-                // Анимация появления нового баннера
-                var fadeIn = new DoubleAnimation
-                {
-                    From = 0,
-                    To = 1,
-                    Duration = TimeSpan.FromSeconds(0.5),
-                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
-                };
-
-                BannerImage.BeginAnimation(OpacityProperty, fadeIn);
+                var img = new BitmapImage();
+                img.BeginInit();
+                img.UriSource = new Uri(path, UriKind.Absolute);
+                img.CacheOption = BitmapCacheOption.OnLoad;
+                img.EndInit();
+                BannerImage.Source = img;
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Ошибка загрузки баннера: {ex.Message}");
-                // Переходим к следующему баннеру при ошибке
-                _currentBannerIndex = (_currentBannerIndex + 1) % _bannerImages.Count;
-                await ShowCurrentBannerWithAnimation();
-            }
+            catch { }
         }
 
-        private async void ShowNextBannerWithAnimation()
-        {
-            if (_bannerImages.Count == 0) return;
-
-            _currentBannerIndex = (_currentBannerIndex + 1) % _bannerImages.Count;
-            await ShowCurrentBannerWithAnimation();
-        }
-
-        // Обработчики пользовательской активности
-        private void Window_PreviewMouseMove(object sender, MouseEventArgs e)
-        {
-            if (_isBannerMode)
-            {
-                // Не выходим из режима баннеров при движении мыши, только при клике
-                return;
-            }
-            ResetIdleTimer();
-        }
-
-        private void Window_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (_isBannerMode)
-            {
-                // Клик в любом месте экрана выходит из режима баннеров
-                ExitBannerMode();
-            }
-            else
-            {
-                ResetIdleTimer();
-            }
-        }
-
-        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            if (_isBannerMode)
-            {
-                // Любая клавиша выходит из режима баннеров
-                ExitBannerMode();
-            }
-            else
-            {
-                ResetIdleTimer();
-
-                if (e.Key == Key.F11)
-                {
-                    ToggleFullScreen();
-                }
-                else if (e.Key == Key.Escape && _isFullScreen)
-                {
-                    ToggleFullScreen();
-                }
-            }
-        }
-
-        private void Window_PreviewTouchDown(object sender, TouchEventArgs e)
-        {
-            if (_isBannerMode)
-            {
-                ExitBannerMode();
-            }
-            else
-            {
-                ResetIdleTimer();
-            }
-        }
-
-        private void Window_PreviewTouchMove(object sender, TouchEventArgs e)
-        {
-            if (_isBannerMode) return;
-            ResetIdleTimer();
-        }
-
-        private void ExitBannerButton_Click(object sender, RoutedEventArgs e)
-        {
-            ExitBannerMode();
-        }
-
-        private void Timer_Tick(object sender, EventArgs e)
-        {
-            UpdateDateTime();
-        }
-
-        private void AITimer_Tick(object sender, EventArgs e)
-        {
-            UpdateAssistantInfo();
-        }
+        // ─── Дата/время ──────────────────────────────────────────────────────
 
         private void UpdateDateTime()
         {
@@ -489,135 +302,78 @@ namespace Kiosk
             DateText.Text = GetRussianDateString(now);
         }
 
-        private string GetRussianDateString(DateTime date)
+        private string GetRussianDateString(DateTime d)
         {
-            string[] daysOfWeek = { "воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота" };
+            string[] days = { "воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота" };
             string[] months = { "января", "февраля", "марта", "апреля", "мая", "июня",
-                              "июля", "августа", "сентября", "октября", "ноября", "декабря" };
-
-            string dayOfWeek = daysOfWeek[(int)date.DayOfWeek];
-            string month = months[date.Month - 1];
-
-            return $"{dayOfWeek}, {date.Day} {month} {date.Year}";
+                                 "июля", "августа", "сентября", "октября", "ноября", "декабря" };
+            return $"{days[(int)d.DayOfWeek]}, {d.Day} {months[d.Month - 1]} {d.Year}";
         }
+
+        // ─── Помощник ────────────────────────────────────────────────────────
 
         private void UpdateAssistantInfo()
         {
-            if (AIClassComboBox.SelectedItem == null || _scheduleData == null)
-                return;
-
-            var selectedClass = AIClassComboBox.SelectedItem.ToString();
-            var currentTime = DateTime.Now;
-
-            var assistantInfo = _assistantService.GetCurrentInfo(_scheduleData, _replacementData, selectedClass, currentTime);
-
-            UpdateAIContent(assistantInfo, selectedClass, currentTime);
+            if (AIClassComboBox.SelectedItem == null || _scheduleData == null) return;
+            var cls = AIClassComboBox.SelectedItem.ToString();
+            var info = _assistantService.GetCurrentInfo(_scheduleData, _replacementData, cls, DateTime.Now);
+            UpdateAIContent(info, cls, DateTime.Now);
         }
 
         private void UpdateAIContent(AssistantInfo info, string className, DateTime currentTime)
         {
             AIContentPanel.Children.Clear();
-
-            // Заголовок с классом
             AddAITitle($"Информация для {className}");
-
-            // Текущее состояние
             AddCurrentState(info.CurrentState, currentTime);
-
-            // Замены
-            if (info.ClassReplacements.Any())
-            {
-                AddReplacementsInfo(info.ClassReplacements);
-            }
-
-            // Следующий урок
-            if (info.NextLesson != null)
-            {
-                AddNextLessonInfo(info.NextLesson);
-            }
-
-            // Расписание на сегодня - ВСЕ уроки
-            if (info.TodayLessons.Any())
-            {
-                AddTodaySchedule(info.TodayLessons);
-            }
+            if (info.ClassReplacements.Any()) AddReplacementsInfo(info.ClassReplacements);
+            if (info.NextLesson != null) AddNextLessonInfo(info.NextLesson);
+            if (info.TodayLessons.Any()) AddTodaySchedule(info.TodayLessons);
         }
 
         private void AddAITitle(string title)
         {
-            var titleBlock = new TextBlock
+            AIContentPanel.Children.Add(new TextBlock
             {
-                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
-                Text = title,
-                Foreground = Brushes.White,
-                FontSize = 22,
-                FontWeight = FontWeights.Bold,
-                Margin = new Thickness(0, 0, 0, 15),
+                Text = title, Foreground = Brushes.White, FontSize = 16,
+                FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 0, 15),
                 TextAlignment = TextAlignment.Center
-            };
-            AIContentPanel.Children.Add(titleBlock);
+            });
         }
 
         private void AddCurrentState(CurrentState state, DateTime currentTime)
         {
-            var statePanel = new StackPanel { Margin = new Thickness(0, 0, 0, 15) };
-
+            var panel = new StackPanel { Margin = new Thickness(0, 0, 0, 15) };
             if (state.IsLesson && state.CurrentLesson != null)
             {
-                AddStateItem(statePanel, "📚 Сейчас идет:", $"{state.CurrentLesson.Number} урок - {state.CurrentLesson.Subject}");
-                AddStateItem(statePanel, "⏰ До конца:", _assistantService.FormatTimeRemaining(state.TimeRemaining));
-                AddStateItem(statePanel, "👨‍🏫 Учитель:", state.CurrentLesson.Teacher);
-                AddStateItem(statePanel, "🚪 Кабинет:", state.CurrentLesson.Classroom);
+                AddStateItem(panel, "📚 Сейчас идет:", $"{state.CurrentLesson.Number} урок - {state.CurrentLesson.Subject}");
+                AddStateItem(panel, "⏰ До конца:", _assistantService.FormatTimeRemaining(state.TimeRemaining));
+                AddStateItem(panel, "👨‍🏫 Учитель:", state.CurrentLesson.Teacher);
+                AddStateItem(panel, "🚪 Кабинет:", state.CurrentLesson.Classroom);
             }
             else if (state.IsBreak && state.NextLesson != null)
             {
-                AddStateItem(statePanel, "☕ Сейчас перемена", "");
-                AddStateItem(statePanel, "⏰ До урока:", _assistantService.FormatTimeRemaining(state.TimeRemaining));
-                AddStateItem(statePanel, "📚 Следующий:", $"{state.NextLesson.Number} урок - {state.NextLesson.Subject}");
-                AddStateItem(statePanel, "👨‍🏫 Учитель:", state.NextLesson.Teacher);
-                AddStateItem(statePanel, "🚪 Кабинет:", state.NextLesson.Classroom);
+                AddStateItem(panel, "☕ Сейчас перемена", "");
+                AddStateItem(panel, "⏰ До урока:", _assistantService.FormatTimeRemaining(state.TimeRemaining));
+                AddStateItem(panel, "📚 Следующий:", $"{state.NextLesson.Number} урок - {state.NextLesson.Subject}");
+                AddStateItem(panel, "👨‍🏫 Учитель:", state.NextLesson.Teacher);
+                AddStateItem(panel, "🚪 Кабинет:", state.NextLesson.Classroom);
             }
             else if (state.IsSchoolOver)
-            {
-                AddStateItem(statePanel, "🎉Уроки завершены", "Хорошего отдыха!");
-            }
+                AddStateItem(panel, "🎉 Уроки завершены", "Хорошего отдыха!");
             else
-            {
-                AddStateItem(statePanel, "ℹ️ Нет информации", "Выберите другой класс или проверьте расписание");
-            }
-
-            AIContentPanel.Children.Add(statePanel);
+                AddStateItem(panel, "ℹ️ Нет информации", "Выберите другой класс или проверьте расписание");
+            AIContentPanel.Children.Add(panel);
         }
 
         private void AddStateItem(Panel parent, string label, string value)
         {
             var grid = new Grid();
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(150) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-
-            var labelBlock = new TextBlock
-            {
-                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
-                Text = label,
-                Foreground = Brushes.LightBlue,
-                FontSize = 16,
-                FontWeight = FontWeights.SemiBold,
-                TextWrapping = TextWrapping.Wrap
-            };
-            Grid.SetColumn(labelBlock, 0);
-
-            var valueBlock = new TextBlock
-            {
-                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
-                Text = value,
-                Foreground = Brushes.White,
-                FontSize = 16,
-                TextWrapping = TextWrapping.Wrap
-            };
-            Grid.SetColumn(valueBlock, 1);
-
-            grid.Children.Add(labelBlock);
-            grid.Children.Add(valueBlock);
+            var lb = new TextBlock { Text = label, Foreground = Brushes.LightBlue, FontSize = 12, FontWeight = FontWeights.SemiBold };
+            var vb = new TextBlock { Text = value, Foreground = Brushes.White, FontSize = 12, TextWrapping = TextWrapping.Wrap };
+            Grid.SetColumn(lb, 0); Grid.SetColumn(vb, 1);
+            grid.Children.Add(lb); grid.Children.Add(vb);
             parent.Children.Add(grid);
         }
 
@@ -626,46 +382,18 @@ namespace Kiosk
             var border = new Border
             {
                 Background = new SolidColorBrush(Color.FromRgb(231, 76, 60)),
-                CornerRadius = new CornerRadius(8),
-                Margin = new Thickness(0, 0, 0, 10),
-                Padding = new Thickness(10)
+                CornerRadius = new CornerRadius(8), Margin = new Thickness(0, 0, 0, 10), Padding = new Thickness(10)
             };
-
-            var stackPanel = new StackPanel();
-
-            var title = new TextBlock
+            var sp = new StackPanel();
+            sp.Children.Add(new TextBlock { Text = "🔄 Замены на сегодня:", Foreground = Brushes.White, FontWeight = FontWeights.Bold, FontSize = 13, Margin = new Thickness(0, 0, 0, 5) });
+            foreach (var r in replacements)
             {
-                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
-                Text = "🔄 Замены на сегодня:",
-                Foreground = Brushes.White,
-                FontWeight = FontWeights.Bold,
-                FontSize = 18,
-                Margin = new Thickness(0, 0, 0, 8)
-            };
-            stackPanel.Children.Add(title);
-
-            foreach (var replacement in replacements) // Показываем ВСЕ замены
-            {
-                var replacementText = $"{replacement.LessonNumber} урок: {replacement.ReplacementTeacher}";
-                if (!string.IsNullOrEmpty(replacement.Classroom) && replacement.Classroom != "-")
-                    replacementText += $" ({replacement.Classroom})";
-
-                if (!string.IsNullOrEmpty(replacement.Notes))
-                    replacementText += $" - {replacement.Notes}";
-
-                var textBlock = new TextBlock
-                {
-                    FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
-                    Text = replacementText,
-                    Foreground = Brushes.White,
-                    FontSize = 15,
-                    Margin = new Thickness(10, 3, 0, 3),
-                    TextWrapping = TextWrapping.Wrap
-                };
-                stackPanel.Children.Add(textBlock);
+                var txt = $"{r.LessonNumber} урок: {r.ReplacementTeacher}";
+                if (!string.IsNullOrEmpty(r.Classroom) && r.Classroom != "-") txt += $" ({r.Classroom})";
+                if (!string.IsNullOrEmpty(r.Notes)) txt += $" - {r.Notes}";
+                sp.Children.Add(new TextBlock { Text = txt, Foreground = Brushes.White, FontSize = 11, Margin = new Thickness(10, 2, 0, 2), TextWrapping = TextWrapping.Wrap });
             }
-
-            border.Child = stackPanel;
+            border.Child = sp;
             AIContentPanel.Children.Add(border);
         }
 
@@ -674,37 +402,16 @@ namespace Kiosk
             var border = new Border
             {
                 Background = new SolidColorBrush(Color.FromRgb(46, 204, 113)),
-                CornerRadius = new CornerRadius(8),
-                Margin = new Thickness(0, 0, 0, 10),
-                Padding = new Thickness(10)
+                CornerRadius = new CornerRadius(8), Margin = new Thickness(0, 0, 0, 10), Padding = new Thickness(10)
             };
-
-            var stackPanel = new StackPanel();
-
-            var title = new TextBlock
+            var sp = new StackPanel();
+            sp.Children.Add(new TextBlock { Text = "➡️ Следующий урок:", Foreground = Brushes.White, FontWeight = FontWeights.Bold, FontSize = 13, Margin = new Thickness(0, 0, 0, 5) });
+            sp.Children.Add(new TextBlock
             {
-                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
-                Text = "➡️ Следующий урок:",
-                Foreground = Brushes.White,
-                FontWeight = FontWeights.Bold,
-                FontSize = 18,
-                Margin = new Thickness(0, 0, 0, 8)
-            };
-            stackPanel.Children.Add(title);
-
-            var details = new TextBlock
-            {
-                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
-                Text = $"{nextLesson.Number} урок: {nextLesson.Subject}\n" +
-                       $"Учитель: {nextLesson.Teacher}\n" +
-                       $"Кабинет: {nextLesson.Classroom}",
-                Foreground = Brushes.White,
-                FontSize = 15,
-                TextWrapping = TextWrapping.Wrap
-            };
-            stackPanel.Children.Add(details);
-
-            border.Child = stackPanel;
+                Text = $"{nextLesson.Number} урок: {nextLesson.Subject}\nУчитель: {nextLesson.Teacher}\nКабинет: {nextLesson.Classroom}",
+                Foreground = Brushes.White, FontSize = 11, TextWrapping = TextWrapping.Wrap
+            });
+            border.Child = sp;
             AIContentPanel.Children.Add(border);
         }
 
@@ -713,69 +420,33 @@ namespace Kiosk
             var border = new Border
             {
                 Background = new SolidColorBrush(Color.FromRgb(52, 73, 94)),
-                CornerRadius = new CornerRadius(8),
-                Margin = new Thickness(0, 0, 0, 10),
-                Padding = new Thickness(10)
+                CornerRadius = new CornerRadius(8), Margin = new Thickness(0, 0, 0, 10), Padding = new Thickness(10)
             };
-
-            var stackPanel = new StackPanel();
-
-            var title = new TextBlock
+            var sp = new StackPanel();
+            sp.Children.Add(new TextBlock { Text = $"📅 Расписание на сегодня ({lessons.Count} уроков):", Foreground = Brushes.White, FontWeight = FontWeights.Bold, FontSize = 13, Margin = new Thickness(0, 0, 0, 5) });
+            foreach (var l in lessons.OrderBy(x => x.Number))
             {
-                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
-                Text = $"📅 Расписание на сегодня ({lessons.Count} уроков):",
-                Foreground = Brushes.White,
-                FontWeight = FontWeights.Bold,
-                FontSize = 18,
-                Margin = new Thickness(0, 0, 0, 8)
-            };
-            stackPanel.Children.Add(title);
-
-            // Показываем ВСЕ уроки, а не только первые 5
-            foreach (var lesson in lessons.OrderBy(l => l.Number))
-            {
-                var lessonText = $"{lesson.Number}. {lesson.Time} - {lesson.Subject}";
-                if (!string.IsNullOrEmpty(lesson.Teacher))
-                    lessonText += $" ({lesson.Teacher})";
-                if (!string.IsNullOrEmpty(lesson.Classroom))
-                    lessonText += $" - {lesson.Classroom}";
-
-                var textBlock = new TextBlock
-                {
-                    FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
-                    Text = lessonText,
-                    Foreground = Brushes.White,
-                    FontSize = 15,
-                    Margin = new Thickness(10, 3, 0, 3),
-                    TextWrapping = TextWrapping.Wrap
-                };
-                stackPanel.Children.Add(textBlock);
+                var t = $"{l.Number}. {l.Time} - {l.Subject}";
+                if (!string.IsNullOrEmpty(l.Teacher)) t += $" ({l.Teacher})";
+                if (!string.IsNullOrEmpty(l.Classroom)) t += $" - {l.Classroom}";
+                sp.Children.Add(new TextBlock { Text = t, Foreground = Brushes.White, FontSize = 11, Margin = new Thickness(10, 2, 0, 2), TextWrapping = TextWrapping.Wrap });
             }
-
-            border.Child = stackPanel;
+            border.Child = sp;
             AIContentPanel.Children.Add(border);
         }
+
+        // ─── Загрузка данных ─────────────────────────────────────────────────
 
         private async void LoadData()
         {
             try
             {
-                // Загружаем расписание
                 _scheduleData = await _scheduleService.LoadScheduleAsync(App.Settings.ScheduleFilePath);
                 UpdateClassComboBox();
-
-                // Загружаем замены
                 _replacementData = _replacementService.LoadReplacements(App.Settings.ReplacementsFilePath);
-
-                // Проверяем наличие замен
-                if (_replacementData != null && _replacementData.HasReplacements)
-                {
-                    StatusText.Text = $"Данные загружены ({_scheduleData.Schedules.Count} классов, есть замены)";
-                }
-                else
-                {
-                    StatusText.Text = $"Данные загружены ({_scheduleData.Schedules.Count} классов, замен нет)";
-                }
+                StatusText.Text = _replacementData != null && _replacementData.HasReplacements
+                    ? $"Данные загружены ({_scheduleData.Schedules.Count} классов, есть замены)"
+                    : $"Данные загружены ({_scheduleData.Schedules.Count} классов, замен нет)";
             }
             catch (Exception ex)
             {
@@ -786,49 +457,77 @@ namespace Kiosk
         private void UpdateClassComboBox()
         {
             AIClassComboBox.Items.Clear();
-
             if (_scheduleData?.Schedules != null && _scheduleData.Schedules.Any())
             {
-                foreach (var schedule in _scheduleData.Schedules.OrderBy(s => s.ClassName))
-                {
-                    AIClassComboBox.Items.Add(schedule.ClassName);
-                }
-
+                foreach (var s in _scheduleData.Schedules.OrderBy(x => x.ClassName))
+                    AIClassComboBox.Items.Add(s.ClassName);
                 if (AIClassComboBox.Items.Count > 0)
                     AIClassComboBox.SelectedIndex = 0;
             }
         }
 
-        private void AIClassComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        public void UpdateSchoolNames()
         {
-            UpdateAssistantInfo();
+            SchoolFullNameText.Text = App.Settings.SchoolFullName;
+            SchoolShortNameText.Text = App.Settings.SchoolShortName;
         }
+
+        // ─── Обработчики событий ─────────────────────────────────────────────
+
+        private void AIClassComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+            => UpdateAssistantInfo();
+
+        private void Window_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            if (_isBannerMode) return;
+            ResetIdleTimer();
+        }
+
+        private void Window_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (_isBannerMode) ExitBannerMode();
+            else ResetIdleTimer();
+        }
+
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (_isBannerMode) { ExitBannerMode(); return; }
+            ResetIdleTimer();
+            if (e.Key == Key.F11) ToggleFullScreen();
+            else if (e.Key == Key.Escape && _isFullScreen) ToggleFullScreen();
+        }
+
+        private void Window_PreviewTouchDown(object sender, TouchEventArgs e)
+        {
+            if (_isBannerMode) ExitBannerMode();
+            else ResetIdleTimer();
+        }
+
+        private void Window_PreviewTouchMove(object sender, TouchEventArgs e)
+        {
+            if (_isBannerMode) return;
+            ResetIdleTimer();
+        }
+
+        private void ExitBannerButton_Click(object sender, RoutedEventArgs e) => ExitBannerMode();
 
         private void NewsButton_Click(object sender, RoutedEventArgs e)
-        {
-            var newsWindow = new NewsBrowserWindow();
-            newsWindow.Show();
-        }
+            => new NewsBrowserWindow().Show();
 
         private void MapBrowserButton_Click(object sender, RoutedEventArgs e)
-        {
-            var mapWindow = new BrowserMap();
-            mapWindow.Show();
-        }
+            => new BrowserMap().Show();
 
         private void ScheduleButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                var scheduleWindow = new Views.ScheduleWindow();
-                scheduleWindow.Owner = this;
-                scheduleWindow.Show();
-                this.Hide();
+                var w = new Views.ScheduleWindow();
+                w.Owner = this; w.Show(); this.Hide();
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка при открытии расписания: {ex.Message}", "Ошибка",
-                              MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -836,15 +535,13 @@ namespace Kiosk
         {
             try
             {
-                var replacementsWindow = new Views.ReplacementsWindow();
-                replacementsWindow.Owner = this;
-                replacementsWindow.Show();
-                this.Hide();
+                var w = new Views.ReplacementsWindow();
+                w.Owner = this; w.Show(); this.Hide();
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка при открытии замен: {ex.Message}", "Ошибка",
-                              MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -852,65 +549,40 @@ namespace Kiosk
         {
             try
             {
+                bool authenticated = false;
                 if (App.Settings.ShowKeyboardForPassword)
                 {
-                    var passwordWindow = new PasswordWindow();
-                    if (passwordWindow.ShowDialog() == true && passwordWindow.IsPasswordCorrect)
-                    {
-                        var settingsWindow = new SettingsWindow();
-                        settingsWindow.Owner = this;
-                        settingsWindow.ShowDialog();
-                        // Обновляем настройки баннеров и названия школы после закрытия окна настроек
-                        LoadBannerSettings();
-                        UpdateSchoolNames();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Неверный пароль", "Ошибка",
-                                      MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
+                    var pw = new PasswordWindow();
+                    authenticated = pw.ShowDialog() == true && pw.IsPasswordCorrect;
                 }
                 else
                 {
-                    var simplePasswordDialog = new SimplePasswordDialog();
-                    if (simplePasswordDialog.ShowDialog() == true && simplePasswordDialog.IsPasswordCorrect)
-                    {
-                        var settingsWindow = new SettingsWindow();
-                        settingsWindow.Owner = this;
-                        settingsWindow.ShowDialog();
-                        // Обновляем настройки баннеров и названия школы после закрытия окна настроек
-                        LoadBannerSettings();
-                        UpdateSchoolNames();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Неверный пароль", "Ошибка",
-                                      MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
+                    var pw = new SimplePasswordDialog();
+                    authenticated = pw.ShowDialog() == true && pw.IsPasswordCorrect;
                 }
+
+                if (!authenticated)
+                {
+                    MessageBox.Show("Неверный пароль", "Ошибка",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                var sw = new SettingsWindow();
+                sw.Owner = this;
+                sw.ShowDialog();
+                LoadBannerSettings();
+
+                // Обновляем видимость виджета погоды
+                WeatherPanel.Visibility = App.Settings.WeatherEnabled
+                    ? Visibility.Visible : Visibility.Collapsed;
+                if (App.Settings.WeatherEnabled)
+                    _ = LoadWeatherAsync();
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка при открытии настроек: {ex.Message}", "Ошибка",
-                              MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void Window_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (_isBannerMode)
-            {
-                ExitBannerMode();
-                return;
-            }
-
-            if (e.Key == Key.F11)
-            {
-                ToggleFullScreen();
-            }
-            else if (e.Key == Key.Escape && _isFullScreen)
-            {
-                ToggleFullScreen();
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -918,16 +590,21 @@ namespace Kiosk
         {
             try
             {
-                var aboutWindow = new Views.AboutWindow();
-                aboutWindow.Owner = this;
-                aboutWindow.Show();
-                this.Hide();
+                var w = new Views.AboutWindow();
+                w.Owner = this; w.Show(); this.Hide();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при открытии информации о проекте: {ex.Message}", "Ошибка",
-                              MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (_isBannerMode) { ExitBannerMode(); return; }
+            if (e.Key == Key.F11) ToggleFullScreen();
+            else if (e.Key == Key.Escape && _isFullScreen) ToggleFullScreen();
         }
 
         private void ToggleFullScreen()
@@ -956,6 +633,7 @@ namespace Kiosk
             _aiTimer?.Stop();
             _idleTimer?.Stop();
             _bannerTimer?.Stop();
+            _weatherTimer?.Stop();
             base.OnClosed(e);
             Application.Current.Shutdown();
         }

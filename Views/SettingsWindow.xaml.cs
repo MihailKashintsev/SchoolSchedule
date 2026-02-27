@@ -9,6 +9,7 @@ namespace Kiosk
         {
             InitializeComponent();
             LoadSettings();
+            VersionLabel.Text = $"Версия {App.Version}";
         }
 
         private void LoadSettings()
@@ -29,86 +30,94 @@ namespace Kiosk
             BannerSwitchIntervalTextBox.Text = App.Settings.BannerSwitchInterval.ToString();
             EnableBannersCheckBox.IsChecked = App.Settings.EnableBanners;
 
+            // Погода
+            WeatherEnabledCheckBox.IsChecked = App.Settings.WeatherEnabled;
+            WeatherCityBox.Text = App.Settings.WeatherCity ?? "";
+            WeatherLatBox.Text = App.Settings.WeatherLat.HasValue
+                ? App.Settings.WeatherLat.Value.ToString("F4", System.Globalization.CultureInfo.InvariantCulture)
+                : "";
+            WeatherLonBox.Text = App.Settings.WeatherLon.HasValue
+                ? App.Settings.WeatherLon.Value.ToString("F4", System.Globalization.CultureInfo.InvariantCulture)
+                : "";
+
             UpdateBannerControls();
+            UpdateWeatherControls();
         }
 
         private void UpdateBannerControls()
         {
-            bool isEnabled = EnableBannersCheckBox.IsChecked ?? false;
-            BannerPathsTextBox.IsEnabled = isEnabled;
-            BannerTimeoutTextBox.IsEnabled = isEnabled;
-            BannerSwitchIntervalTextBox.IsEnabled = isEnabled;
+            bool on = EnableBannersCheckBox.IsChecked ?? false;
+            BannerPathsTextBox.IsEnabled = on;
+            BannerTimeoutTextBox.IsEnabled = on;
+            BannerSwitchIntervalTextBox.IsEnabled = on;
+        }
+
+        private void UpdateWeatherControls()
+        {
+            bool on = WeatherEnabledCheckBox.IsChecked ?? true;
+            WeatherCityBox.IsEnabled = on;
+            WeatherLatBox.IsEnabled = on;
+            WeatherLonBox.IsEnabled = on;
         }
 
         private void EnableBannersCheckBox_Changed(object sender, RoutedEventArgs e)
-        {
-            UpdateBannerControls();
-        }
+            => UpdateBannerControls();
+
+        private void WeatherEnabledCheckBox_Changed(object sender, RoutedEventArgs e)
+            => UpdateWeatherControls();
 
         private void BrowseBannerPaths_Click(object sender, RoutedEventArgs e)
         {
-            var openFileDialog = new OpenFileDialog
+            var dlg = new OpenFileDialog
             {
                 Filter = "PNG files (*.png)|*.png|All files (*.*)|*.*",
                 Title = "Выберите файлы баннеров",
                 Multiselect = true
             };
-
-            if (openFileDialog.ShowDialog() == true)
-            {
-                BannerPathsTextBox.Text = string.Join(";", openFileDialog.FileNames);
-            }
+            if (dlg.ShowDialog() == true)
+                BannerPathsTextBox.Text = string.Join(";", dlg.FileNames);
         }
 
         private void BrowseReplacementsPath_Click(object sender, RoutedEventArgs e)
         {
-            var openFileDialog = new OpenFileDialog
+            var dlg = new OpenFileDialog
             {
                 Filter = "Word documents (*.docx)|*.docx|All files (*.*)|*.*",
                 Title = "Выберите файл замен"
             };
-
-            if (openFileDialog.ShowDialog() == true)
-            {
-                ReplacementsPathTextBox.Text = openFileDialog.FileName;
-            }
+            if (dlg.ShowDialog() == true)
+                ReplacementsPathTextBox.Text = dlg.FileName;
         }
 
         private void ChangePasswordButton_Click(object sender, RoutedEventArgs e)
         {
-            var changePasswordWindow = new ChangePasswordWindow();
-            if (changePasswordWindow.ShowDialog() == true)
-            {
-                MessageBox.Show("Пароль успешно изменен", "Успех",
-                              MessageBoxButton.OK, MessageBoxImage.Information);
-            }
+            var w = new ChangePasswordWindow();
+            if (w.ShowDialog() == true)
+                MessageBox.Show("Пароль успешно изменён", "Успех",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void BrowsePathButton_Click(object sender, RoutedEventArgs e)
         {
-            var openFileDialog = new OpenFileDialog
+            var dlg = new OpenFileDialog
             {
                 Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
                 Title = "Выберите файл расписания"
             };
-
-            if (openFileDialog.ShowDialog() == true)
-            {
-                SchedulePathTextBox.Text = openFileDialog.FileName;
-            }
+            if (dlg.ShowDialog() == true)
+                SchedulePathTextBox.Text = dlg.FileName;
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = false;
-            this.Close();
+            DialogResult = false;
+            Close();
         }
 
         private void SaveSettings()
         {
             if (!string.IsNullOrWhiteSpace(SchoolFullNameBox.Text))
                 App.Settings.SchoolFullName = SchoolFullNameBox.Text.Trim();
-
             if (!string.IsNullOrWhiteSpace(SchoolShortNameBox.Text))
                 App.Settings.SchoolShortName = SchoolShortNameBox.Text.Trim();
 
@@ -117,27 +126,29 @@ namespace Kiosk
             App.Settings.NewsUrl = NewsUrl.Text;
             App.Settings.ReplacementsFilePath = ReplacementsPathTextBox.Text;
             App.Settings.AutoRefresh = AutoRefreshCheckBox.IsChecked ?? true;
-
-            if (int.TryParse(RefreshIntervalTextBox.Text, out int interval) && interval > 0)
-            {
-                App.Settings.RefreshInterval = interval;
-            }
-
             App.Settings.ShowKeyboardForPassword = ShowKeyboardCheckBox.IsChecked ?? true;
 
+            if (int.TryParse(RefreshIntervalTextBox.Text, out int interval) && interval > 0)
+                App.Settings.RefreshInterval = interval;
+
             App.Settings.BannerImagePaths = BannerPathsTextBox.Text;
-
-            if (int.TryParse(BannerTimeoutTextBox.Text, out int timeout) && timeout > 0)
-            {
-                App.Settings.BannerTimeout = timeout;
-            }
-
-            if (int.TryParse(BannerSwitchIntervalTextBox.Text, out int switchInterval) && switchInterval > 0)
-            {
-                App.Settings.BannerSwitchInterval = switchInterval;
-            }
-
             App.Settings.EnableBanners = EnableBannersCheckBox.IsChecked ?? true;
+            if (int.TryParse(BannerTimeoutTextBox.Text, out int timeout) && timeout > 0)
+                App.Settings.BannerTimeout = timeout;
+            if (int.TryParse(BannerSwitchIntervalTextBox.Text, out int sw) && sw > 0)
+                App.Settings.BannerSwitchInterval = sw;
+
+            // Погода
+            App.Settings.WeatherEnabled = WeatherEnabledCheckBox.IsChecked ?? true;
+            App.Settings.WeatherCity = WeatherCityBox.Text.Trim();
+
+            var culture = System.Globalization.CultureInfo.InvariantCulture;
+            App.Settings.WeatherLat = double.TryParse(
+                WeatherLatBox.Text.Replace(',', '.'),
+                System.Globalization.NumberStyles.Any, culture, out double lat) ? lat : (double?)null;
+            App.Settings.WeatherLon = double.TryParse(
+                WeatherLonBox.Text.Replace(',', '.'),
+                System.Globalization.NumberStyles.Any, culture, out double lon) ? lon : (double?)null;
 
             App.SaveSettings();
         }
@@ -145,13 +156,10 @@ namespace Kiosk
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             SaveSettings();
-
-            // Обновляем названия школы на главном экране сразу после сохранения
-            if (Owner is MainWindow mainWindow)
-                mainWindow.UpdateSchoolNames();
-
-            this.DialogResult = true;
-            this.Close();
+            if (Owner is MainWindow mw)
+                mw.UpdateSchoolNames();
+            DialogResult = true;
+            Close();
         }
     }
 }
