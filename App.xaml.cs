@@ -1,7 +1,9 @@
 using Newtonsoft.Json;
+using System;
 using System.IO;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace Kiosk
 {
@@ -9,7 +11,6 @@ namespace Kiosk
     {
         public static Settings Settings { get; private set; }
 
-        /// <summary>Текущая версия приложения из сборки (Major.Minor.Build)</summary>
         public static string Version
         {
             get
@@ -21,8 +22,38 @@ namespace Kiosk
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            // Глобальные обработчики — пишем любую необработанную ошибку в лог
+            AppDomain.CurrentDomain.UnhandledException += (s, ex) =>
+                LogError("UnhandledException", ex.ExceptionObject as Exception);
+
+            DispatcherUnhandledException += (s, ex) =>
+            {
+                LogError("DispatcherUnhandledException", ex.Exception);
+                ex.Handled = true; // не даём приложению молча умереть
+                MessageBox.Show(
+                    $"Ошибка запуска:\n\n{ex.Exception.Message}\n\nПодробности в crash.log рядом с Kiosk.exe",
+                    "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                Shutdown(1);
+            };
+
             base.OnStartup(e);
             LoadSettings();
+        }
+
+        private static void LogError(string source, Exception ex)
+        {
+            try
+            {
+                var logPath = Path.Combine(
+                    AppDomain.CurrentDomain.BaseDirectory, "crash.log");
+                var text = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {source}\n" +
+                           $"{ex?.GetType().FullName}: {ex?.Message}\n" +
+                           $"{ex?.StackTrace}\n" +
+                           $"Inner: {ex?.InnerException?.Message}\n" +
+                           new string('-', 60) + "\n";
+                File.AppendAllText(logPath, text);
+            }
+            catch { }
         }
 
         private void LoadSettings()
