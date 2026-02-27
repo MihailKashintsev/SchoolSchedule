@@ -1,4 +1,4 @@
-﻿using Kiosk.Models;
+using Kiosk.Models;
 using Kiosk.Services;
 using Kiosk.Views;
 using System;
@@ -68,6 +68,16 @@ namespace Kiosk
         {
             // Создаем и запускаем анимации для кнопок
             CreateButtonAnimations();
+            // Загружаем названия школы из настроек
+            UpdateSchoolNames();
+        }
+
+        public void UpdateSchoolNames()
+        {
+            if (FindName("SchoolFullNameText") is System.Windows.Controls.TextBlock fullNameBlock)
+                fullNameBlock.Text = App.Settings.SchoolFullName;
+            if (FindName("SchoolShortNameText") is System.Windows.Controls.TextBlock shortNameBlock)
+                shortNameBlock.Text = App.Settings.SchoolShortName;
         }
 
         private void CreateButtonAnimations()
@@ -537,9 +547,10 @@ namespace Kiosk
         {
             var titleBlock = new TextBlock
             {
+                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                 Text = title,
                 Foreground = Brushes.White,
-                FontSize = 16,
+                FontSize = 22,
                 FontWeight = FontWeights.Bold,
                 Margin = new Thickness(0, 0, 0, 15),
                 TextAlignment = TextAlignment.Center
@@ -581,23 +592,27 @@ namespace Kiosk
         private void AddStateItem(Panel parent, string label, string value)
         {
             var grid = new Grid();
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(150) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
             var labelBlock = new TextBlock
             {
+                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                 Text = label,
                 Foreground = Brushes.LightBlue,
-                FontSize = 12,
-                FontWeight = FontWeights.SemiBold
+                FontSize = 16,
+                FontWeight = FontWeights.SemiBold,
+                TextWrapping = TextWrapping.Wrap
             };
             Grid.SetColumn(labelBlock, 0);
 
             var valueBlock = new TextBlock
             {
+                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                 Text = value,
                 Foreground = Brushes.White,
-                FontSize = 12
+                FontSize = 16,
+                TextWrapping = TextWrapping.Wrap
             };
             Grid.SetColumn(valueBlock, 1);
 
@@ -620,11 +635,12 @@ namespace Kiosk
 
             var title = new TextBlock
             {
+                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                 Text = "🔄 Замены на сегодня:",
                 Foreground = Brushes.White,
                 FontWeight = FontWeights.Bold,
-                FontSize = 13,
-                Margin = new Thickness(0, 0, 0, 5)
+                FontSize = 18,
+                Margin = new Thickness(0, 0, 0, 8)
             };
             stackPanel.Children.Add(title);
 
@@ -639,10 +655,11 @@ namespace Kiosk
 
                 var textBlock = new TextBlock
                 {
+                    FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                     Text = replacementText,
                     Foreground = Brushes.White,
-                    FontSize = 11,
-                    Margin = new Thickness(10, 2, 0, 2),
+                    FontSize = 15,
+                    Margin = new Thickness(10, 3, 0, 3),
                     TextWrapping = TextWrapping.Wrap
                 };
                 stackPanel.Children.Add(textBlock);
@@ -666,21 +683,23 @@ namespace Kiosk
 
             var title = new TextBlock
             {
+                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                 Text = "➡️ Следующий урок:",
                 Foreground = Brushes.White,
                 FontWeight = FontWeights.Bold,
-                FontSize = 13,
-                Margin = new Thickness(0, 0, 0, 5)
+                FontSize = 18,
+                Margin = new Thickness(0, 0, 0, 8)
             };
             stackPanel.Children.Add(title);
 
             var details = new TextBlock
             {
+                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                 Text = $"{nextLesson.Number} урок: {nextLesson.Subject}\n" +
                        $"Учитель: {nextLesson.Teacher}\n" +
                        $"Кабинет: {nextLesson.Classroom}",
                 Foreground = Brushes.White,
-                FontSize = 11,
+                FontSize = 15,
                 TextWrapping = TextWrapping.Wrap
             };
             stackPanel.Children.Add(details);
@@ -703,11 +722,12 @@ namespace Kiosk
 
             var title = new TextBlock
             {
+                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                 Text = $"📅 Расписание на сегодня ({lessons.Count} уроков):",
                 Foreground = Brushes.White,
                 FontWeight = FontWeights.Bold,
-                FontSize = 13,
-                Margin = new Thickness(0, 0, 0, 5)
+                FontSize = 18,
+                Margin = new Thickness(0, 0, 0, 8)
             };
             stackPanel.Children.Add(title);
 
@@ -722,10 +742,11 @@ namespace Kiosk
 
                 var textBlock = new TextBlock
                 {
+                    FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                     Text = lessonText,
                     Foreground = Brushes.White,
-                    FontSize = 11,
-                    Margin = new Thickness(10, 2, 0, 2),
+                    FontSize = 15,
+                    Margin = new Thickness(10, 3, 0, 3),
                     TextWrapping = TextWrapping.Wrap
                 };
                 stackPanel.Children.Add(textBlock);
@@ -839,8 +860,9 @@ namespace Kiosk
                         var settingsWindow = new SettingsWindow();
                         settingsWindow.Owner = this;
                         settingsWindow.ShowDialog();
-                        // Обновляем настройки баннеров после закрытия окна настроек
+                        // Обновляем настройки баннеров и названия школы после закрытия окна настроек
                         LoadBannerSettings();
+                        UpdateSchoolNames();
                     }
                     else
                     {
@@ -856,8 +878,9 @@ namespace Kiosk
                         var settingsWindow = new SettingsWindow();
                         settingsWindow.Owner = this;
                         settingsWindow.ShowDialog();
-                        // Обновляем настройки баннеров после закрытия окна настроек
+                        // Обновляем настройки баннеров и названия школы после закрытия окна настроек
                         LoadBannerSettings();
+                        UpdateSchoolNames();
                     }
                     else
                     {

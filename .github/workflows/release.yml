@@ -1,0 +1,112 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore SchoolSchedule.sln
+
+      - name: Get version from tag
+        id: version
+        shell: bash
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Update AssemblyInfo version
+        shell: powershell
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          $file = "Properties\AssemblyInfo.cs"
+          if (Test-Path $file) {
+            (Get-Content $file) `
+              -replace 'AssemblyVersion\(".*"\)', "AssemblyVersion(`"$version.0`")" `
+              -replace 'AssemblyFileVersion\(".*"\)', "AssemblyFileVersion(`"$version.0`")" |
+            Set-Content $file
+          }
+
+      - name: Build Release
+        run: msbuild SchoolSchedule.sln /p:Configuration=Release /p:Platform="Any CPU" /p:OutputPath=bin\Release\publish
+
+      - name: Collect build output
+        shell: powershell
+        run: |
+          $src = "bin\Release\publish"
+          $dst = "release_output"
+          New-Item -ItemType Directory -Force -Path $dst | Out-Null
+          # Копируем exe и все dll/зависимости
+          Copy-Item "$src\*.exe" $dst -Force
+          Copy-Item "$src\*.dll" $dst -Force
+          Copy-Item "$src\*.config" $dst -Force
+          Copy-Item "$src\*.json" $dst -ErrorAction SilentlyContinue -Force
+          # Копируем папки ресурсов если есть
+          foreach ($folder in @("Images", "Maps", "Pages")) {
+            if (Test-Path $folder) {
+              Copy-Item $folder $dst -Recurse -Force
+            }
+          }
+          # Копируем дефолтные конфиги если есть
+          if (Test-Path "settings.json") { Copy-Item "settings.json" $dst -Force }
+
+      - name: Create ZIP archive
+        shell: powershell
+        run: |
+          Compress-Archive -Path "release_output\*" `
+            -DestinationPath "SchoolSchedule-v${{ steps.version.outputs.VERSION }}.zip" `
+            -Force
+
+      - name: Download and setup Inno Setup
+        shell: powershell
+        run: |
+          $url = "https://jrsoftware.org/download.php/is.exe"
+          Invoke-WebRequest $url -OutFile "innosetup.exe"
+          Start-Process -FilePath "innosetup.exe" -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" -Wait
+
+      - name: Build Installer
+        shell: powershell
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          # Вставляем версию в скрипт
+          (Get-Content "installer\SchoolSchedule.iss") `
+            -replace '#define AppVersion ".*"', "#define AppVersion `"$version`"" |
+          Set-Content "installer\SchoolSchedule_versioned.iss"
+          
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "installer\SchoolSchedule_versioned.iss"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "SchoolSchedule ${{ github.ref_name }}"
+          body: |
+            ## 🏫 SchoolSchedule ${{ github.ref_name }}
+            
+            ### Установка
+            - **Установщик** — скачайте `SchoolSchedule-Setup-v${{ steps.version.outputs.VERSION }}.exe` и запустите
+            - **Портативная версия** — скачайте `SchoolSchedule-v${{ steps.version.outputs.VERSION }}.zip` и распакуйте
+            
+            ### Обновление
+            Приложение проверяет обновления автоматически при запуске.
+          files: |
+            SchoolSchedule-v${{ steps.version.outputs.VERSION }}.zip
+            installer\Output\SchoolSchedule-Setup-v${{ steps.version.outputs.VERSION }}.exe
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

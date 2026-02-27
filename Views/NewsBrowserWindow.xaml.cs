@@ -32,6 +32,8 @@ namespace Kiosk.Views
         private string _tempUserDataFolder;
         private bool _buttonsInjected = false;
 
+        private NewsOverlay _overlay;
+
         public NewsBrowserWindow()
         {
             InitializeComponent();
@@ -40,6 +42,12 @@ namespace Kiosk.Views
             _tempUserDataFolder = Path.Combine(Path.GetTempPath(), "KioskBrowser_" + Guid.NewGuid().ToString());
 
             InitializeAsync();
+
+            // Оверлей поверх WebView2
+            _overlay = new NewsOverlay(this);
+            _overlay.Show();
+
+            this.Closed += (s, e) => _overlay?.Close();
         }
 
         private async void InitializeAsync()
@@ -657,6 +665,11 @@ namespace Kiosk.Views
             {
                 _allowedUrlPatterns.Remove(urlPattern.ToLower());
             }
+        }
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
         }
     }
 }

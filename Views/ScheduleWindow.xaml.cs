@@ -134,6 +134,15 @@ namespace Kiosk.Views
                 if (selectedClass != null)
                 {
                     _currentDisplayDays = _scheduleService.GetDisplayDays(selectedClass);
+
+                    // Выбираем сегодняшний день, если есть уроки; иначе первый с уроками
+                    var todayDay = _currentDisplayDays.FirstOrDefault(d => d.IsToday && d.Lessons.Any());
+                    if (todayDay != null)
+                    {
+                        foreach (var d in _currentDisplayDays) d.IsSelected = false;
+                        todayDay.IsSelected = true;
+                    }
+
                     UpdateDayButtons();
                     ShowSelectedDay();
                 }
@@ -153,18 +162,18 @@ namespace Kiosk.Views
 
                 if (day.IsToday)
                 {
-                    button.Background = new SolidColorBrush(Color.FromRgb(23, 162, 184));
+                    button.Background = new SolidColorBrush(Color.FromRgb(30, 77, 183));
                     button.Foreground = Brushes.White;
                 }
                 else if (day.IsSelected)
                 {
-                    button.Background = new SolidColorBrush(Color.FromRgb(44, 95, 158));
+                    button.Background = new SolidColorBrush(Color.FromRgb(42, 82, 152));
                     button.Foreground = Brushes.White;
                 }
                 else
                 {
-                    button.Background = Brushes.LightGray;
-                    button.Foreground = Brushes.Black;
+                    button.Background = new SolidColorBrush(Color.FromRgb(26, 58, 92));
+                    button.Foreground = new SolidColorBrush(Color.FromRgb(138, 173, 212));
                 }
             }
         }
@@ -212,70 +221,87 @@ namespace Kiosk.Views
             var lesson = item.Lesson;
             if (lesson == null) return;
 
-            // Создаем Border для урока
             var border = new Border
             {
-                Background = Brushes.White,
-                BorderBrush = new SolidColorBrush(Color.FromRgb(222, 226, 230)),
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(8),
-                Margin = new Thickness(0, 0, 0, 10)
+                Background = new SolidColorBrush(Color.FromRgb(15, 35, 65)),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(30, 77, 183)),
+                BorderThickness = new Thickness(1.5),
+                CornerRadius = new CornerRadius(14),
+                Margin = new Thickness(0, 0, 0, 12),
+                Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.Black,
+                    Opacity = 0.3,
+                    BlurRadius = 12,
+                    ShadowDepth = 0
+                }
             };
 
-            var grid = new Grid { Margin = new Thickness(15, 10, 15, 10) };
+            var grid = new Grid { Margin = new Thickness(18, 14, 18, 14) };
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) });
 
             // Номер и время
-            var leftPanel = new StackPanel { Margin = new Thickness(0, 0, 15, 0) };
+            var leftPanel = new StackPanel { Margin = new Thickness(0, 0, 20, 0), VerticalAlignment = VerticalAlignment.Center };
             leftPanel.Children.Add(new TextBlock
             {
+                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                 Text = lesson.Number.ToString(),
-                FontSize = 16,
+                FontSize = 28,
                 FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush(Color.FromRgb(44, 95, 158))
+                Foreground = new SolidColorBrush(Color.FromRgb(79, 195, 247)),
+                TextAlignment = TextAlignment.Center
             });
             leftPanel.Children.Add(new TextBlock
             {
+                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                 Text = lesson.Time,
-                FontSize = 12,
-                Foreground = new SolidColorBrush(Color.FromRgb(108, 117, 125))
+                FontSize = 14,
+                Foreground = new SolidColorBrush(Color.FromRgb(74, 106, 138)),
+                TextAlignment = TextAlignment.Center
             });
             Grid.SetColumn(leftPanel, 0);
 
             // Предмет и учитель
-            var middlePanel = new StackPanel();
+            var middlePanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
             middlePanel.Children.Add(new TextBlock
             {
+                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                 Text = lesson.Subject,
-                FontSize = 16,
+                FontSize = 20,
                 FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush(Color.FromRgb(44, 62, 80))
+                Foreground = Brushes.White
             });
             middlePanel.Children.Add(new TextBlock
             {
+                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                 Text = lesson.Teacher,
-                FontSize = 14,
-                Foreground = new SolidColorBrush(Color.FromRgb(73, 80, 87))
+                FontSize = 16,
+                Foreground = new SolidColorBrush(Color.FromRgb(138, 173, 212)),
+                Margin = new Thickness(0, 4, 0, 0)
             });
             Grid.SetColumn(middlePanel, 1);
 
             // Кабинет
             var classroomBorder = new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(233, 236, 239)),
-                CornerRadius = new CornerRadius(4),
-                Padding = new Thickness(8, 5, 8, 5),
+                Background = new SolidColorBrush(Color.FromRgb(18, 40, 64)),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(42, 82, 152)),
+                BorderThickness = new Thickness(1.5),
+                CornerRadius = new CornerRadius(10),
+                Padding = new Thickness(14, 8, 14, 8),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center
             };
             classroomBorder.Child = new TextBlock
             {
+                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                 Text = lesson.Classroom,
-                FontSize = 14,
-                FontWeight = FontWeights.Medium,
-                Foreground = new SolidColorBrush(Color.FromRgb(73, 80, 87))
+                FontSize = 18,
+                FontWeight = FontWeights.Bold,
+                Foreground = new SolidColorBrush(Color.FromRgb(79, 195, 247)),
+                TextAlignment = TextAlignment.Center
             };
             Grid.SetColumn(classroomBorder, 2);
 
@@ -289,15 +315,14 @@ namespace Kiosk.Views
 
         private void AddBreakItem(ScheduleItem item)
         {
-            // Создаем Border для перемены
             var border = new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(232, 244, 253)),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(182, 215, 242)),
+                Background = new SolidColorBrush(Color.FromRgb(10, 22, 40)),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(30, 77, 183)),
                 BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(8),
-                Margin = new Thickness(0, 0, 0, 10),
-                Height = 50
+                CornerRadius = new CornerRadius(10),
+                Margin = new Thickness(40, 0, 40, 12),
+                Height = 46
             };
 
             var stackPanel = new StackPanel
@@ -309,18 +334,22 @@ namespace Kiosk.Views
 
             stackPanel.Children.Add(new TextBlock
             {
+                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                 Text = item.BreakText,
                 FontSize = 16,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = new SolidColorBrush(Color.FromRgb(44, 95, 158)),
-                Margin = new Thickness(0, 0, 10, 0)
+                Foreground = new SolidColorBrush(Color.FromRgb(74, 106, 138)),
+                Margin = new Thickness(0, 0, 10, 0),
+                VerticalAlignment = VerticalAlignment.Center
             });
 
             stackPanel.Children.Add(new TextBlock
             {
+                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                 Text = $"{item.BreakDuration} мин",
-                FontSize = 14,
-                Foreground = new SolidColorBrush(Color.FromRgb(108, 117, 125))
+                FontSize = 15,
+                Foreground = new SolidColorBrush(Color.FromRgb(42, 74, 106)),
+                VerticalAlignment = VerticalAlignment.Center
             });
 
             border.Child = stackPanel;

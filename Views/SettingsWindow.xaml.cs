@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using System.Windows;
 
 namespace Kiosk
@@ -13,6 +13,9 @@ namespace Kiosk
 
         private void LoadSettings()
         {
+            SchoolFullNameBox.Text = App.Settings.SchoolFullName;
+            SchoolShortNameBox.Text = App.Settings.SchoolShortName;
+
             SchedulePathTextBox.Text = App.Settings.ScheduleFilePath;
             MapUrl.Text = App.Settings.MapUrl;
             NewsUrl.Text = App.Settings.NewsUrl;
@@ -103,6 +106,12 @@ namespace Kiosk
 
         private void SaveSettings()
         {
+            if (!string.IsNullOrWhiteSpace(SchoolFullNameBox.Text))
+                App.Settings.SchoolFullName = SchoolFullNameBox.Text.Trim();
+
+            if (!string.IsNullOrWhiteSpace(SchoolShortNameBox.Text))
+                App.Settings.SchoolShortName = SchoolShortNameBox.Text.Trim();
+
             App.Settings.ScheduleFilePath = SchedulePathTextBox.Text;
             App.Settings.MapUrl = MapUrl.Text;
             App.Settings.NewsUrl = NewsUrl.Text;
@@ -136,6 +145,11 @@ namespace Kiosk
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             SaveSettings();
+
+            // Обновляем названия школы на главном экране сразу после сохранения
+            if (Owner is MainWindow mainWindow)
+                mainWindow.UpdateSchoolNames();
+
             this.DialogResult = true;
             this.Close();
         }

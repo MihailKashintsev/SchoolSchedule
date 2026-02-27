@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+using Kiosk.Services;
+using Newtonsoft.Json;
 using System.IO;
 using System.Windows;
 
@@ -12,6 +13,9 @@ namespace Kiosk
         {
             base.OnStartup(e);
             LoadSettings();
+
+            // Проверяем обновления в фоне (не блокируем запуск)
+            _ = AutoUpdateService.CheckForUpdatesAsync(silent: true);
         }
 
         private void LoadSettings()
