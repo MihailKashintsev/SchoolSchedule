@@ -25,19 +25,33 @@ jobs:
         shell: bash
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
+      - name: Clean leftover build artifacts from repo
+        shell: powershell
+        run: |
+          # Удаляем папки которые могли случайно попасть в репо
+          foreach ($dir in @("release_output", "publish", "obj", "bin")) {
+            if (Test-Path $dir) {
+              Remove-Item $dir -Recurse -Force
+              Write-Host "Removed: $dir"
+            }
+          }
+
       - name: Restore dependencies
         run: dotnet restore SchoolSchedule.sln
 
       - name: Publish
         shell: powershell
         run: |
+          $ver = "${{ steps.version.outputs.VERSION }}"
           dotnet publish Kiosk.csproj `
             --configuration Release `
             --runtime win-x64 `
             --self-contained false `
             --output publish `
             -p:PublishSingleFile=false `
-            -p:Version="${{ steps.version.outputs.VERSION }}"
+            -p:AssemblyVersion="$ver.0" `
+            -p:FileVersion="$ver.0" `
+            -p:InformationalVersion="$ver"
 
       - name: Copy resource folders
         shell: powershell
@@ -45,6 +59,7 @@ jobs:
           foreach ($folder in @("Images", "Maps", "Pages")) {
             if (Test-Path $folder) {
               Copy-Item $folder publish -Recurse -Force
+              Write-Host "Copied: $folder"
             }
           }
           if (Test-Path "settings.json") {
@@ -54,36 +69,40 @@ jobs:
       - name: Create ZIP
         shell: powershell
         run: |
+          $ver = "${{ steps.version.outputs.VERSION }}"
           Compress-Archive -Path "publish\*" `
-            -DestinationPath "SchoolSchedule-v${{ steps.version.outputs.VERSION }}.zip" `
+            -DestinationPath "SchoolSchedule-v$ver.zip" `
             -Force
+          Write-Host "Created: SchoolSchedule-v$ver.zip"
 
       - name: Build Installer
         shell: powershell
         run: |
-          $version = "${{ steps.version.outputs.VERSION }}"
+          $ver = "${{ steps.version.outputs.VERSION }}"
 
-          # Inno Setup уже установлен на windows-latest
           $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
           if (-not (Test-Path $iscc)) {
-            # Fallback: скачиваем если нет
+            Write-Host "Inno Setup not found, downloading..."
             Invoke-WebRequest "https://jrsoftware.org/download.php/is.exe" -OutFile "is_setup.exe"
             Start-Process "is_setup.exe" -ArgumentList "/VERYSILENT /NORESTART" -Wait
           }
 
-          # Подставляем версию и путь к publish в .iss файл
+          # Подставляем версию в скрипт
           $iss = Get-Content "installer\SchoolSchedule.iss" -Raw
-          $iss = $iss -replace '#define AppVersion ".*"', "#define AppVersion `"$version`""
-          $iss = $iss -replace '\.\.\\bin\\Release\\publish', "..\..\publish"
+          $iss = $iss -replace '#define AppVersion ".*"', "#define AppVersion `"$ver`""
+          New-Item -ItemType Directory -Force -Path "installer\Output" | Out-Null
           Set-Content "installer\SchoolSchedule_build.iss" $iss
 
           & $iscc "installer\SchoolSchedule_build.iss"
 
-          # Переименовываем с версией
-          $outDir = "installer\Output"
-          $exeFile = Get-ChildItem $outDir -Filter "*.exe" | Select-Object -First 1
+          # Находим и переименовываем exe
+          $exeFile = Get-ChildItem "installer\Output" -Filter "*.exe" | Select-Object -First 1
           if ($exeFile) {
-            Rename-Item $exeFile.FullName "SchoolSchedule-Setup-v$version.exe"
+            $newName = "SchoolSchedule-Setup-v$ver.exe"
+            Rename-Item $exeFile.FullName $newName -Force
+            Write-Host "Installer: $newName"
+          } else {
+            Write-Warning "Installer exe not found, skipping"
           }
 
       - name: Create GitHub Release
@@ -94,12 +113,12 @@ jobs:
           body: |
             ## SchoolSchedule ${{ github.ref_name }}
 
-            ### Установка
-            - **Установщик** — скачайте `SchoolSchedule-Setup-v${{ steps.version.outputs.VERSION }}.exe` и запустите
-            - **Портативная версия** — скачайте ZIP, распакуйте и запустите `Kiosk.exe`
+            ### Install
+            - **Installer** — download `SchoolSchedule-Setup-v${{ steps.version.outputs.VERSION }}.exe` and run it
+            - **Portable** — download ZIP, unpack and run `Kiosk.exe`
 
-            ### Автообновление
-            Приложение проверяет обновления автоматически при каждом запуске.
+            ### Auto-update
+            The app checks for updates automatically on every launch.
           files: |
             SchoolSchedule-v${{ steps.version.outputs.VERSION }}.zip
             installer/Output/SchoolSchedule-Setup-v${{ steps.version.outputs.VERSION }}.exe
