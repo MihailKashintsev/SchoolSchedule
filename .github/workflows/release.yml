@@ -15,79 +15,76 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Setup NuGet
-        uses: NuGet/setup-nuget@v2
-
-      - name: Restore NuGet packages
-        run: nuget restore SchoolSchedule.sln
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
 
       - name: Get version from tag
         id: version
         shell: bash
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
-      - name: Update AssemblyInfo version
+      - name: Restore dependencies
+        run: dotnet restore SchoolSchedule.sln
+
+      - name: Publish
         shell: powershell
         run: |
-          $version = "${{ steps.version.outputs.VERSION }}"
-          $file = "Properties\AssemblyInfo.cs"
-          if (Test-Path $file) {
-            (Get-Content $file) `
-              -replace 'AssemblyVersion\(".*"\)', "AssemblyVersion(`"$version.0`")" `
-              -replace 'AssemblyFileVersion\(".*"\)', "AssemblyFileVersion(`"$version.0`")" |
-            Set-Content $file
-          }
+          dotnet publish Kiosk.csproj `
+            --configuration Release `
+            --runtime win-x64 `
+            --self-contained false `
+            --output publish `
+            -p:PublishSingleFile=false `
+            -p:Version="${{ steps.version.outputs.VERSION }}"
 
-      - name: Build Release
-        run: msbuild SchoolSchedule.sln /p:Configuration=Release /p:Platform="Any CPU" /p:OutputPath=bin\Release\publish
-
-      - name: Collect build output
+      - name: Copy resource folders
         shell: powershell
         run: |
-          $src = "bin\Release\publish"
-          $dst = "release_output"
-          New-Item -ItemType Directory -Force -Path $dst | Out-Null
-          # Копируем exe и все dll/зависимости
-          Copy-Item "$src\*.exe" $dst -Force
-          Copy-Item "$src\*.dll" $dst -Force
-          Copy-Item "$src\*.config" $dst -Force
-          Copy-Item "$src\*.json" $dst -ErrorAction SilentlyContinue -Force
-          # Копируем папки ресурсов если есть
           foreach ($folder in @("Images", "Maps", "Pages")) {
             if (Test-Path $folder) {
-              Copy-Item $folder $dst -Recurse -Force
+              Copy-Item $folder publish -Recurse -Force
             }
           }
-          # Копируем дефолтные конфиги если есть
-          if (Test-Path "settings.json") { Copy-Item "settings.json" $dst -Force }
+          if (Test-Path "settings.json") {
+            Copy-Item "settings.json" publish -Force
+          }
 
-      - name: Create ZIP archive
+      - name: Create ZIP
         shell: powershell
         run: |
-          Compress-Archive -Path "release_output\*" `
+          Compress-Archive -Path "publish\*" `
             -DestinationPath "SchoolSchedule-v${{ steps.version.outputs.VERSION }}.zip" `
             -Force
-
-      - name: Download and setup Inno Setup
-        shell: powershell
-        run: |
-          $url = "https://jrsoftware.org/download.php/is.exe"
-          Invoke-WebRequest $url -OutFile "innosetup.exe"
-          Start-Process -FilePath "innosetup.exe" -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" -Wait
 
       - name: Build Installer
         shell: powershell
         run: |
           $version = "${{ steps.version.outputs.VERSION }}"
-          # Вставляем версию в скрипт
-          (Get-Content "installer\SchoolSchedule.iss") `
-            -replace '#define AppVersion ".*"', "#define AppVersion `"$version`"" |
-          Set-Content "installer\SchoolSchedule_versioned.iss"
-          
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "installer\SchoolSchedule_versioned.iss"
+
+          # Inno Setup уже установлен на windows-latest
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            # Fallback: скачиваем если нет
+            Invoke-WebRequest "https://jrsoftware.org/download.php/is.exe" -OutFile "is_setup.exe"
+            Start-Process "is_setup.exe" -ArgumentList "/VERYSILENT /NORESTART" -Wait
+          }
+
+          # Подставляем версию и путь к publish в .iss файл
+          $iss = Get-Content "installer\SchoolSchedule.iss" -Raw
+          $iss = $iss -replace '#define AppVersion ".*"', "#define AppVersion `"$version`""
+          $iss = $iss -replace '\.\.\\bin\\Release\\publish', "..\..\publish"
+          Set-Content "installer\SchoolSchedule_build.iss" $iss
+
+          & $iscc "installer\SchoolSchedule_build.iss"
+
+          # Переименовываем с версией
+          $outDir = "installer\Output"
+          $exeFile = Get-ChildItem $outDir -Filter "*.exe" | Select-Object -First 1
+          if ($exeFile) {
+            Rename-Item $exeFile.FullName "SchoolSchedule-Setup-v$version.exe"
+          }
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -95,18 +92,19 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: "SchoolSchedule ${{ github.ref_name }}"
           body: |
-            ## 🏫 SchoolSchedule ${{ github.ref_name }}
-            
+            ## SchoolSchedule ${{ github.ref_name }}
+
             ### Установка
             - **Установщик** — скачайте `SchoolSchedule-Setup-v${{ steps.version.outputs.VERSION }}.exe` и запустите
-            - **Портативная версия** — скачайте `SchoolSchedule-v${{ steps.version.outputs.VERSION }}.zip` и распакуйте
-            
-            ### Обновление
-            Приложение проверяет обновления автоматически при запуске.
+            - **Портативная версия** — скачайте ZIP, распакуйте и запустите `Kiosk.exe`
+
+            ### Автообновление
+            Приложение проверяет обновления автоматически при каждом запуске.
           files: |
             SchoolSchedule-v${{ steps.version.outputs.VERSION }}.zip
-            installer\Output\SchoolSchedule-Setup-v${{ steps.version.outputs.VERSION }}.exe
+            installer/Output/SchoolSchedule-Setup-v${{ steps.version.outputs.VERSION }}.exe
           draft: false
           prerelease: false
+          fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
