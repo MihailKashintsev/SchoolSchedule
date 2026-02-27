@@ -23,7 +23,6 @@ namespace Kiosk
         {
             base.OnStartup(e);
             LoadSettings();
-            _ = AutoUpdateService.CheckForUpdatesAsync(silent: true);
         }
 
         private void LoadSettings()

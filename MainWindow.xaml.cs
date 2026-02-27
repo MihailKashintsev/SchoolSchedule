@@ -251,10 +251,10 @@ namespace Kiosk
             // Показываем первый баннер
             _currentBannerIndex = 0;
             ShowBanner(_bannerImages[_currentBannerIndex]);
-            BannerOverlay.Visibility = Visibility.Visible;
+            BannerGrid.Visibility = Visibility.Visible;
 
             var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(500));
-            BannerOverlay.BeginAnimation(UIElement.OpacityProperty, fadeIn);
+            BannerGrid.BeginAnimation(UIElement.OpacityProperty, fadeIn);
 
             _bannerTimer.Start();
             await Task.CompletedTask;
@@ -264,9 +264,9 @@ namespace Kiosk
         {
             _bannerTimer.Stop();
             var fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(300));
-            BannerOverlay.BeginAnimation(UIElement.OpacityProperty, fadeOut);
+            BannerGrid.BeginAnimation(UIElement.OpacityProperty, fadeOut);
             await Task.Delay(300);
-            BannerOverlay.Visibility = Visibility.Collapsed;
+            BannerGrid.Visibility = Visibility.Collapsed;
             _isBannerMode = false;
             _lastUserActivity = DateTime.Now;
             if (_bannerImages.Count > 0 && App.Settings.EnableBanners)
