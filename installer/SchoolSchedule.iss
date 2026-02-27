@@ -22,7 +22,6 @@ AppUpdatesURL={#AppURL}/releases
 DefaultDirName={autopf}\{#AppName}
 DefaultGroupName={#AppName}
 AllowNoIcons=yes
-SetupIconFile=..\Icon_32_32.ico
 OutputDir=Output
 OutputBaseFilename=SchoolSchedule-Setup-v{#AppVersion}
 Compression=lzma2/ultra64
