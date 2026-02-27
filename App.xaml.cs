@@ -50,6 +50,7 @@ namespace Kiosk
 
     public class Settings
     {
+        // Существующие свойства
         public string ScheduleFilePath { get; set; } = "schedule.json";
         public string MapUrl { get; set; } = "https://example.com/map";
         public string NewsUrl { get; set; } = "https://example.com/news";
@@ -59,10 +60,14 @@ namespace Kiosk
         public bool ShowKeyboardForPassword { get; set; } = true;
         public string AdminPassword { get; set; } = "1234";
 
-        // Новые свойства для баннеров
+        // Свойства для баннеров
         public string BannerImagePaths { get; set; } = "";
         public int BannerTimeout { get; set; } = 30;
         public int BannerSwitchInterval { get; set; } = 5;
         public bool EnableBanners { get; set; } = true;
+
+        // *** ДОБАВЛЕННЫЕ СВОЙСТВА ***
+        public string SchoolFullName { get; set; } = "Муниципальное бюджетное общеобразовательное учреждение";
+        public string SchoolShortName { get; set; } = "Средняя общеобразовательная школа «Лига первых»";
     }
 }

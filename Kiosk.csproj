@@ -4,6 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>disable</Nullable>
+	<NoWarn>CA1416</NoWarn>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>false</UseWindowsForms>
     <LangVersion>10.0</LangVersion>
