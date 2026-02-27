@@ -56,14 +56,16 @@ namespace Kiosk
             catch { }
         }
 
+        private static string SettingsPath =>
+            Path.Combine(Program.DataFolder, "settings.json");
+
         private void LoadSettings()
         {
-            string settingsPath = "settings.json";
-            if (File.Exists(settingsPath))
+            if (File.Exists(SettingsPath))
             {
                 try
                 {
-                    string json = File.ReadAllText(settingsPath);
+                    string json = File.ReadAllText(SettingsPath);
                     Settings = JsonConvert.DeserializeObject<Settings>(json);
                 }
                 catch { Settings = new Settings(); }
@@ -73,9 +75,8 @@ namespace Kiosk
 
         public static void SaveSettings()
         {
-            string settingsPath = "settings.json";
             string json = JsonConvert.SerializeObject(Settings, Formatting.Indented);
-            File.WriteAllText(settingsPath, json);
+            File.WriteAllText(SettingsPath, json);
         }
     }
 

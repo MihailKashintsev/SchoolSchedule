@@ -6,11 +6,19 @@ namespace Kiosk
 {
     public class Program
     {
+        // Папка где приложение хранит данные (settings.json, crash.log)
+        // C:\Users\<user>\AppData\Roaming\SchoolKiosk\
+        public static readonly string DataFolder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "SchoolKiosk");
+
         [STAThread]
         public static void Main(string[] args)
         {
-            var logPath = Path.Combine(
-                AppDomain.CurrentDomain.BaseDirectory, "crash.log");
+            // Создаём папку для данных если нет
+            Directory.CreateDirectory(DataFolder);
+
+            var logPath = Path.Combine(DataFolder, "crash.log");
 
             try
             {
@@ -24,9 +32,6 @@ namespace Kiosk
                     $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] App initialized, running...\n");
 
                 app.Run();
-
-                File.AppendAllText(logPath,
-                    $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] App exited normally.\n");
             }
             catch (Exception ex)
             {
@@ -37,8 +42,9 @@ namespace Kiosk
                           $"Inner stack: {ex.InnerException?.StackTrace}\n" +
                           new string('-', 60) + "\n";
                 File.AppendAllText(logPath, msg);
-                MessageBox.Show(msg, "Критическая ошибка запуска",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    $"Ошибка запуска:\n\n{ex.Message}\n\nПодробности:\n{logPath}",
+                    "Критическая ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
