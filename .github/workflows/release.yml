@@ -36,6 +36,19 @@ jobs:
             }
           }
 
+      - name: Remove version attributes from AssemblyInfo
+        shell: powershell
+        run: |
+          $file = "Properties\AssemblyInfo.cs"
+          if (Test-Path $file) {
+            $content = Get-Content $file -Raw
+            # Убираем AssemblyVersion и AssemblyFileVersion - они конфликтуют с -p:AssemblyVersion
+            $content = $content -replace '\[assembly:\s*AssemblyVersion\("[^"]*"\)\]', ''
+            $content = $content -replace '\[assembly:\s*AssemblyFileVersion\("[^"]*"\)\]', ''
+            Set-Content $file $content -NoNewline
+            Write-Host "Stripped version attributes from AssemblyInfo.cs"
+          }
+
       - name: Restore dependencies
         run: dotnet restore SchoolSchedule.sln
 
