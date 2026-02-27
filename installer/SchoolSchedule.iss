@@ -52,9 +52,6 @@ Source: "..\publish\*.config";      DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Images\*"; DestDir: "{app}\Images"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: DirExists('..\Images')
 Source: "..\Maps\*";   DestDir: "{app}\Maps";   Flags: ignoreversion recursesubdirs createallsubdirs; Check: DirExists('..\Maps')
 
-; Дефолтный конфиг - не перезаписываем
-Source: "..\settings.json"; DestDir: "{app}"; Flags: onlyifdoesntexist; Check: FileExists('..\settings.json')
-
 [Icons]
 Name: "{group}\{#AppName}";         Filename: "{app}\{#AppExeName}"
 Name: "{group}\Uninstall {#AppName}"; Filename: "{uninstallexe}"
