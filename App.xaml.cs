@@ -15,7 +15,11 @@ namespace Kiosk
         {
             get
             {
-                var v = Assembly.GetExecutingAssembly().GetName().Version;
+                var asm = System.Reflection.Assembly.GetExecutingAssembly();
+                var attr = asm.GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>();
+                if (attr != null && !string.IsNullOrWhiteSpace(attr.InformationalVersion))
+                    return attr.InformationalVersion;
+                var v = asm.GetName().Version;
                 return v != null ? $"{v.Major}.{v.Minor}.{v.Build}" : "1.0.0";
             }
         }

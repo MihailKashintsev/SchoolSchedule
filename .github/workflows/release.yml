@@ -62,8 +62,6 @@ jobs:
             --self-contained true `
             --output publish `
             -p:PublishSingleFile=false `
-            -p:AssemblyVersion="$ver.0" `
-            -p:FileVersion="$ver.0" `
             -p:InformationalVersion="$ver"
 
       - name: Copy resource folders
