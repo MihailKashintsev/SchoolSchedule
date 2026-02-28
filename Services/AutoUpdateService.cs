@@ -80,6 +80,12 @@ namespace Kiosk.Services
             return Version.TryParse(clean, out var v) ? v : null;
         }
 
+        private static async Task<GitHubRelease> FetchLatestReleaseAsync()
+        {
+            var json = await _http.GetStringAsync(ApiUrl);
+            return JsonConvert.DeserializeObject<GitHubRelease>(json);
+        }
+
         public static async Task DownloadAndInstallAsync(string url, string fileName,
             IProgress<int> progress = null)
         {
