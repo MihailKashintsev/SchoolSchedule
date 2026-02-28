@@ -75,12 +75,12 @@ namespace Kiosk
             }
             catch (Exception ex)
             {
-                var logPath = System.IO.Path.Combine(
-                    AppDomain.CurrentDomain.BaseDirectory, "crash.log");
-                System.IO.File.AppendAllText(logPath,
-                    $"[{DateTime.Now}] MainWindow ctor crash:\n{ex}\n{new string('-', 60)}\n");
+                var logPath = System.IO.Path.Combine(Program.DataFolder, "crash.log");
+                try { System.IO.File.AppendAllText(logPath,
+                    $"[{DateTime.Now}] MainWindow ctor crash:\n{ex}\n{new string('-', 60)}\n"); }
+                catch { }
                 MessageBox.Show(
-                    $"Ошибка запуска:\n{ex.Message}\n\nПодробности: crash.log",
+                    $"Ошибка запуска:\n{ex.Message}\n\nПодробности:\n{logPath}",
                     "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 Application.Current.Shutdown(1);
             }
