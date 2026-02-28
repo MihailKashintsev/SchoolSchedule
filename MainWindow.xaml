@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Школьный информационный киоск"
+        Icon="pack://application:,,,/icon.ico"
         WindowState="Maximized"
         WindowStyle="None"
         KeyDown="Window_KeyDown"
@@ -10,7 +11,7 @@
     <Window.Resources>
         <!-- Поддержка эмодзи -->
         <Style TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="Segoe UI Emoji, Segoe UI, sans-serif"/>
+            <Setter Property="FontFamily" Value="Segoe UI Emoji"/>
         </Style>
 
 
@@ -206,7 +207,7 @@
                                     <TextBlock x:Name="WeatherEmoji" Grid.Column="0"
                                                Text="🌤️" FontSize="48"
                                                VerticalAlignment="Center" Margin="0,0,14,0"
-                                               FontFamily="Segoe UI Emoji, Segoe UI, sans-serif"/>
+                                               FontFamily="Segoe UI Emoji"/>
 
                                     <!-- Температура и описание -->
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
@@ -214,15 +215,15 @@
                                                    Text="+5°C"
                                                    FontSize="34" FontWeight="Bold"
                                                    Foreground="#4FC3F7"
-                                                   FontFamily="Segoe UI, sans-serif"/>
+                                                   FontFamily="Segoe UI"/>
                                         <TextBlock x:Name="WeatherDesc"
                                                    Text="Переменная облачность"
                                                    FontSize="13" Foreground="#CBD5E0"
-                                                   FontFamily="Segoe UI Emoji, Segoe UI, sans-serif"/>
+                                                   FontFamily="Segoe UI Emoji"/>
                                         <TextBlock x:Name="WeatherCity"
                                                    Text=""
                                                    FontSize="11" Foreground="#3A5A80"
-                                                   FontFamily="Segoe UI, sans-serif"/>
+                                                   FontFamily="Segoe UI"/>
                                     </StackPanel>
                                 </Grid>
 
@@ -231,7 +232,7 @@
                                            Text="Ощущается +3°  ·  Ветер 3 м/с  ·  Влажность 72%"
                                            FontSize="11" Foreground="#3A5A80"
                                            Margin="0,8,0,0" TextWrapping="Wrap"
-                                           FontFamily="Segoe UI, sans-serif"/>
+                                           FontFamily="Segoe UI"/>
                             </StackPanel>
                         </Grid>
                     </Border>

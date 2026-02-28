@@ -61,7 +61,7 @@
             <TextBlock Text="Настройки приложения"
                        FontSize="22" FontWeight="Bold" Foreground="White"
                        HorizontalAlignment="Center"
-                       FontFamily="Segoe UI Emoji, Segoe UI, sans-serif"/>
+                       FontFamily="Segoe UI Emoji"/>
         </Border>
 
         <!-- Контент -->
@@ -230,7 +230,7 @@
                 <TextBlock x:Name="VersionLabel" Grid.Column="0"
                            VerticalAlignment="Center"
                            FontSize="12" Foreground="#2A4A6A"
-                           FontFamily="Segoe UI, sans-serif"/>
+                           FontFamily="Segoe UI"/>
 
                 <!-- Кнопки справа -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">

@@ -10,7 +10,7 @@
     <Window.Resources>
         <!-- Поддержка эмодзи -->
         <Style TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="Segoe UI Emoji, Segoe UI, sans-serif"/>
+            <Setter Property="FontFamily" Value="Segoe UI Emoji"/>
         </Style>
     </Window.Resources>
     <Grid>
@@ -286,7 +286,7 @@
                            Grid.Column="0"
                            Foreground="#2A4A6A" FontSize="13"
                            VerticalAlignment="Center"
-                           FontFamily="Segoe UI, sans-serif"/>
+                           FontFamily="Segoe UI"/>
                 <TextBlock Grid.Column="1"
                            Text="© RENDERGAMES • Школьный киоск"
                            Foreground="#2A4A6A" FontSize="13"
