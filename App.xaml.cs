@@ -42,6 +42,9 @@ namespace Kiosk
 
             base.OnStartup(e);
             LoadSettings();
+
+            // Проверяем обновления в фоне
+            _ = Kiosk.Services.AutoUpdateService.CheckForUpdatesAsync(silent: true);
         }
 
         private static void LogError(string source, Exception ex)

@@ -9,9 +9,6 @@ using System.Windows;
 
 namespace Kiosk.Services
 {
-    /// <summary>
-    /// Сервис автоматического обновления приложения через GitHub Releases.
-    /// </summary>
     public class AutoUpdateService
     {
         private const string RepoOwner = "MihailKashintsev";
@@ -26,7 +23,6 @@ namespace Kiosk.Services
             _http.Timeout = TimeSpan.FromSeconds(15);
         }
 
-        // ── Публичный метод: вызывается при старте приложения ──────────────
         public static async Task CheckForUpdatesAsync(bool silent = true)
         {
             try
@@ -39,7 +35,6 @@ namespace Kiosk.Services
 
                 if (latest == null || latest <= current) return;
 
-                // Есть новая версия — показываем окно
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     var win = new Kiosk.Views.UpdateWindow(
@@ -60,29 +55,31 @@ namespace Kiosk.Services
             }
         }
 
-        // ── Получить данные о последнем релизе ─────────────────────────────
-        private static async Task<GitHubRelease> FetchLatestReleaseAsync()
-        {
-            var json = await _http.GetStringAsync(ApiUrl);
-            return JsonConvert.DeserializeObject<GitHubRelease>(json);
-        }
-
-        // ── Текущая версия из AssemblyInfo ─────────────────────────────────
+        // Читаем InformationalVersion — именно его проставляет GitHub Actions
         public static Version GetCurrentVersion()
         {
-            var v = Assembly.GetExecutingAssembly().GetName().Version;
-            return new Version(v.Major, v.Minor, v.Build);
+            var asm = Assembly.GetExecutingAssembly();
+
+            var infoAttr = asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+            if (infoAttr != null && !string.IsNullOrWhiteSpace(infoAttr.InformationalVersion))
+            {
+                var parsed = ParseVersion(infoAttr.InformationalVersion);
+                if (parsed != null) return parsed;
+            }
+
+            // Fallback
+            var v = asm.GetName().Version;
+            return new Version(v?.Major ?? 0, v?.Minor ?? 0, v?.Build ?? 0);
         }
 
         private static Version ParseVersion(string tag)
         {
-            tag = tag?.TrimStart('v') ?? "";
-            // Убираем суффикс вроде -beta
-            var clean = tag.Split('-')[0];
+            if (string.IsNullOrWhiteSpace(tag)) return null;
+            var clean = tag.TrimStart('v').Split('-')[0].Split('+')[0];
+            if (clean.Split('.').Length == 2) clean += ".0";
             return Version.TryParse(clean, out var v) ? v : null;
         }
 
-        // ── Скачать и запустить установщик ─────────────────────────────────
         public static async Task DownloadAndInstallAsync(string url, string fileName,
             IProgress<int> progress = null)
         {
@@ -109,25 +106,22 @@ namespace Kiosk.Services
                 }
             }
 
-            // Если это установщик — запускаем и выходим
             if (fileName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
             {
                 Process.Start(new ProcessStartInfo
                 {
-                    FileName  = tempPath,
-                    Arguments = "/SILENT /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS",
+                    FileName        = tempPath,
+                    Arguments       = "/SILENT /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS",
                     UseShellExecute = true
                 });
                 Application.Current.Shutdown();
             }
             else
             {
-                // ZIP — открываем папку с файлом
                 Process.Start("explorer.exe", $"/select,\"{tempPath}\"");
             }
         }
 
-        // ── Найти URL установщика в ассетах релиза ─────────────────────────
         private static string GetInstallerUrl(GitHubRelease release)
         {
             foreach (var asset in release.Assets ?? Array.Empty<GitHubAsset>())
@@ -144,20 +138,19 @@ namespace Kiosk.Services
             return null;
         }
 
-        // ── Модели ответа GitHub API ────────────────────────────────────────
         private class GitHubRelease
         {
-            [JsonProperty("tag_name")]    public string TagName  { get; set; }
-            [JsonProperty("body")]        public string Body     { get; set; }
-            [JsonProperty("assets")]      public GitHubAsset[] Assets { get; set; }
-            [JsonProperty("html_url")]    public string HtmlUrl  { get; set; }
+            [JsonProperty("tag_name")]   public string TagName { get; set; }
+            [JsonProperty("body")]       public string Body    { get; set; }
+            [JsonProperty("assets")]     public GitHubAsset[] Assets { get; set; }
+            [JsonProperty("html_url")]   public string HtmlUrl { get; set; }
         }
 
         private class GitHubAsset
         {
-            [JsonProperty("name")]                  public string Name                { get; set; }
-            [JsonProperty("browser_download_url")]  public string BrowserDownloadUrl  { get; set; }
-            [JsonProperty("size")]                  public long   Size                { get; set; }
+            [JsonProperty("name")]                 public string Name               { get; set; }
+            [JsonProperty("browser_download_url")] public string BrowserDownloadUrl { get; set; }
+            [JsonProperty("size")]                 public long   Size               { get; set; }
         }
     }
 }
