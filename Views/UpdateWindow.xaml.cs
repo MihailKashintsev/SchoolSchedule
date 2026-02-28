@@ -1,5 +1,6 @@
 using Kiosk.Services;
 using System;
+using System.Text.RegularExpressions;
 using System.Windows;
 
 namespace Kiosk.Views
@@ -17,18 +18,43 @@ namespace Kiosk.Views
             _installerUrl = installerUrl;
             _zipUrl       = zipUrl;
 
-            CurrentVersionText.Text  = $"Текущая: v{currentVersion}";
-            LatestVersionText.Text   = latestVersion;
-            ReleaseNotesText.Text    = string.IsNullOrWhiteSpace(releaseNotes)
-                ? "Нет описания для этого обновления."
-                : releaseNotes;
+            // Текущая версия — берём из App.Version (InformationalVersion)
+            CurrentVersionText.Text = $"Текущая: v{App.Version}";
+            LatestVersionText.Text  = latestVersion.StartsWith("v")
+                ? latestVersion : $"v{latestVersion}";
 
-            // Если установщика нет — скрываем кнопку
+            ReleaseNotesText.Text = string.IsNullOrWhiteSpace(releaseNotes)
+                ? "Нет описания для этого обновления."
+                : StripMarkdown(releaseNotes);
+
             if (string.IsNullOrEmpty(installerUrl))
                 InstallButton.IsEnabled = false;
 
             if (string.IsNullOrEmpty(zipUrl))
                 DownloadZipButton.IsEnabled = false;
+        }
+
+        /// <summary>Убирает markdown-разметку и оставляет читаемый текст</summary>
+        private static string StripMarkdown(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return text;
+
+            // Заголовки ## → просто текст с переносом
+            text = Regex.Replace(text, @"^#{1,6}\s*", "", RegexOptions.Multiline);
+
+            // **жирный** и *курсив* → просто текст
+            text = Regex.Replace(text, @"\*{1,2}([^*]+)\*{1,2}", "$1");
+
+            // `код` → просто текст
+            text = Regex.Replace(text, @"`([^`]+)`", "$1");
+
+            // [текст](ссылка) → текст
+            text = Regex.Replace(text, @"\[([^\]]+)\]\([^\)]+\)", "$1");
+
+            // Убираем тройные переносы и лишние пробелы
+            text = Regex.Replace(text, @"\n{3,}", "\n\n");
+
+            return text.Trim();
         }
 
         private async void InstallButton_Click(object sender, RoutedEventArgs e)
@@ -43,18 +69,15 @@ namespace Kiosk.Views
                 $"SchoolSchedule-{LatestVersionText.Text}.zip");
         }
 
-        private void SkipButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
+        private void SkipButton_Click(object sender, RoutedEventArgs e) => Close();
 
         private async System.Threading.Tasks.Task StartDownload(string url, string fileName)
         {
-            InstallButton.IsEnabled      = false;
-            DownloadZipButton.IsEnabled  = false;
-            SkipButton.IsEnabled         = false;
-            ProgressPanel.Visibility     = Visibility.Visible;
-            ProgressLabel.Text           = $"Скачивание {fileName}...";
+            InstallButton.IsEnabled     = false;
+            DownloadZipButton.IsEnabled = false;
+            SkipButton.IsEnabled        = false;
+            ProgressPanel.Visibility    = Visibility.Visible;
+            ProgressLabel.Text          = $"Скачивание {fileName}...";
 
             try
             {
