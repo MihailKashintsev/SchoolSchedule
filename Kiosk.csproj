@@ -46,10 +46,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Иконка встраивается в exe -->
-    <Content Include="icon.ico">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <!-- Иконка встроена в exe через <ApplicationIcon> выше -->
+    <None Include="icon.ico"/>
     <Resource Include="Icon_32_32.png" />
     <Resource Include="Images\AIhelper.png" />
     <Resource Include="Images\Logo.png" />
