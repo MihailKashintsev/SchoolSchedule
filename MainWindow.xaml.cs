@@ -44,29 +44,46 @@ namespace Kiosk
 
         public MainWindow()
         {
-            InitializeComponent();
-            InitializeTimers();
-            UpdateDateTime();
-            LoadData();
-            LoadBannerSettings();
-
-            // Загружаем погоду
-            if (App.Settings.WeatherEnabled)
+            try
             {
-                WeatherPanel.Visibility = Visibility.Visible;
-                _ = LoadWeatherAsync();
+                InitializeComponent();
+                InitializeTimers();
+                UpdateDateTime();
+                LoadData();
+                LoadBannerSettings();
+
+                // Сразу подставляем названия из настроек
+                UpdateSchoolNames();
+
+                // Загружаем погоду
+                if (App.Settings.WeatherEnabled)
+                {
+                    WeatherPanel.Visibility = Visibility.Visible;
+                    _ = LoadWeatherAsync();
+                }
+
+                this.PreviewMouseMove += Window_PreviewMouseMove;
+                this.PreviewMouseDown += Window_PreviewMouseDown;
+                this.PreviewKeyDown += Window_PreviewKeyDown;
+                this.PreviewTouchDown += Window_PreviewTouchDown;
+                this.PreviewTouchMove += Window_PreviewTouchMove;
+                Loaded += MainWindow_Loaded;
+
+                _lastUserActivity = DateTime.Now;
+                WindowState = WindowState.Maximized;
+                WindowStyle = WindowStyle.None;
             }
-
-            this.PreviewMouseMove += Window_PreviewMouseMove;
-            this.PreviewMouseDown += Window_PreviewMouseDown;
-            this.PreviewKeyDown += Window_PreviewKeyDown;
-            this.PreviewTouchDown += Window_PreviewTouchDown;
-            this.PreviewTouchMove += Window_PreviewTouchMove;
-            Loaded += MainWindow_Loaded;
-
-            _lastUserActivity = DateTime.Now;
-            WindowState = WindowState.Maximized;
-            WindowStyle = WindowStyle.None;
+            catch (Exception ex)
+            {
+                var logPath = System.IO.Path.Combine(
+                    AppDomain.CurrentDomain.BaseDirectory, "crash.log");
+                System.IO.File.AppendAllText(logPath,
+                    $"[{DateTime.Now}] MainWindow ctor crash:\n{ex}\n{new string('-', 60)}\n");
+                MessageBox.Show(
+                    $"Ошибка запуска:\n{ex.Message}\n\nПодробности: crash.log",
+                    "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                Application.Current.Shutdown(1);
+            }
         }
 
         // ─── Погода ───────────────────────────────────────────────────────────

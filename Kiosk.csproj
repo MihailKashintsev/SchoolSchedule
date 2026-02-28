@@ -1,11 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-	<StartupObject>Kiosk.Program</StartupObject>
+    <StartupObject>Kiosk.Program</StartupObject>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>disable</Nullable>
-	<NoWarn>CA1416</NoWarn>
+    <NoWarn>CA1416</NoWarn>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>false</UseWindowsForms>
     <LangVersion>10.0</LangVersion>
@@ -15,13 +14,15 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <PlatformTarget>x64</PlatformTarget>
     <NeutralLanguage>ru</NeutralLanguage>
+
+    <!-- Иконка приложения (exe + заголовок окна + панель задач) -->
+    <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
@@ -45,45 +46,28 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Icon_32_32.ico" />
+    <!-- Иконка встраивается в exe -->
+    <Content Include="icon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Resource Include="Icon_32_32.png" />
-    <Resource Include="Images\AIhelper.png">
-      <CustomToolNamespace>Copy if newer</CustomToolNamespace>
-    </Resource>
-    <Resource Include="Images\Logo.png">
-      <CustomToolNamespace>Copy always</CustomToolNamespace>
-    </Resource>
-    <Resource Include="Images\map_emoji.png">
-      <CustomToolNamespace>Copy always</CustomToolNamespace>
-    </Resource>
-    <Resource Include="Images\newsVK.png">
-      <CustomToolNamespace>Copy always</CustomToolNamespace>
-    </Resource>
-    <Resource Include="Images\qrcode1.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\qrcode2.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\question_emoji.png">
-      <CustomToolNamespace>Copy always</CustomToolNamespace>
-    </Resource>
-    <Resource Include="Images\refresh_emoji.png">
-      <CustomToolNamespace>Copy always</CustomToolNamespace>
-    </Resource>
-    <Resource Include="Images\ring.png">
-      <CustomToolNamespace>Copy if newer</CustomToolNamespace>
-    </Resource>
-    <Resource Include="Images\settings_emoji.png">
-      <CustomToolNamespace>Copy always</CustomToolNamespace>
-    </Resource>
+    <Resource Include="Images\AIhelper.png" />
+    <Resource Include="Images\Logo.png" />
+    <Resource Include="Images\map_emoji.png" />
+    <Resource Include="Images\newsVK.png" />
+    <Resource Include="Images\qrcode1.png" />
+    <Resource Include="Images\qrcode2.png" />
+    <Resource Include="Images\question_emoji.png" />
+    <Resource Include="Images\refresh_emoji.png" />
+    <Resource Include="Images\ring.png" />
+    <Resource Include="Images\settings_emoji.png" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Emoji.Wpf" Version="0.3.4" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3650.58" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-	<PackageReference Include="DocumentFormat.OpenXml" Version="2.20.0" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.20.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -95,5 +79,4 @@
   <ItemGroup>
     <Folder Include="Fonts\" />
   </ItemGroup>
-
 </Project>

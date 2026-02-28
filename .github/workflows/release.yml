@@ -76,6 +76,10 @@ jobs:
           if (Test-Path "settings.json") {
             Copy-Item "settings.json" publish -Force
           }
+          if (Test-Path "icon.ico") {
+            Copy-Item "icon.ico" publish -Force
+            Write-Host "Copied: icon.ico"
+          }
 
       - name: Create ZIP
         shell: powershell
