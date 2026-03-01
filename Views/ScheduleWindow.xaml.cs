@@ -1,4 +1,4 @@
-﻿using Kiosk.Models;
+using Kiosk.Models;
 using Kiosk.Services;
 using System;
 using System.Collections.Generic;
@@ -244,18 +244,16 @@ namespace Kiosk.Views
 
             // Номер и время
             var leftPanel = new StackPanel { Margin = new Thickness(0, 0, 20, 0), VerticalAlignment = VerticalAlignment.Center };
-            leftPanel.Children.Add(new TextBlock
+            leftPanel.Children.Add(new Emoji.Wpf.TextBlock
             {
-                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                 Text = lesson.Number.ToString(),
                 FontSize = 28,
                 FontWeight = FontWeights.Bold,
                 Foreground = new SolidColorBrush(Color.FromRgb(79, 195, 247)),
                 TextAlignment = TextAlignment.Center
             });
-            leftPanel.Children.Add(new TextBlock
+            leftPanel.Children.Add(new Emoji.Wpf.TextBlock
             {
-                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                 Text = lesson.Time,
                 FontSize = 14,
                 Foreground = new SolidColorBrush(Color.FromRgb(74, 106, 138)),
@@ -265,17 +263,15 @@ namespace Kiosk.Views
 
             // Предмет и учитель
             var middlePanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
-            middlePanel.Children.Add(new TextBlock
+            middlePanel.Children.Add(new Emoji.Wpf.TextBlock
             {
-                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                 Text = lesson.Subject,
                 FontSize = 20,
                 FontWeight = FontWeights.Bold,
                 Foreground = Brushes.White
             });
-            middlePanel.Children.Add(new TextBlock
+            middlePanel.Children.Add(new Emoji.Wpf.TextBlock
             {
-                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                 Text = lesson.Teacher,
                 FontSize = 16,
                 Foreground = new SolidColorBrush(Color.FromRgb(138, 173, 212)),
@@ -284,6 +280,7 @@ namespace Kiosk.Views
             Grid.SetColumn(middlePanel, 1);
 
             // Кабинет
+            var hasClassroom = !string.IsNullOrWhiteSpace(lesson.Classroom) && lesson.Classroom != "-";
             var classroomBorder = new Border
             {
                 Background = new SolidColorBrush(Color.FromRgb(18, 40, 64)),
@@ -292,12 +289,12 @@ namespace Kiosk.Views
                 CornerRadius = new CornerRadius(10),
                 Padding = new Thickness(14, 8, 14, 8),
                 HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center
+                VerticalAlignment = VerticalAlignment.Center,
+                Visibility = hasClassroom ? Visibility.Visible : Visibility.Collapsed
             };
-            classroomBorder.Child = new TextBlock
+            classroomBorder.Child = new Emoji.Wpf.TextBlock
             {
-                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
-                Text = lesson.Classroom,
+                Text = lesson.Classroom ?? "",
                 FontSize = 18,
                 FontWeight = FontWeights.Bold,
                 Foreground = new SolidColorBrush(Color.FromRgb(79, 195, 247)),
@@ -332,9 +329,8 @@ namespace Kiosk.Views
                 VerticalAlignment = VerticalAlignment.Center
             };
 
-            stackPanel.Children.Add(new TextBlock
+            stackPanel.Children.Add(new Emoji.Wpf.TextBlock
             {
-                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                 Text = item.BreakText,
                 FontSize = 16,
                 FontWeight = FontWeights.SemiBold,
@@ -343,9 +339,8 @@ namespace Kiosk.Views
                 VerticalAlignment = VerticalAlignment.Center
             });
 
-            stackPanel.Children.Add(new TextBlock
+            stackPanel.Children.Add(new Emoji.Wpf.TextBlock
             {
-                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji, Segoe UI"),
                 Text = $"{item.BreakDuration} мин",
                 FontSize = 15,
                 Foreground = new SolidColorBrush(Color.FromRgb(42, 74, 106)),

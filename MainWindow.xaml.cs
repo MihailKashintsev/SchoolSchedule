@@ -349,7 +349,7 @@ namespace Kiosk
 
         private void AddAITitle(string title)
         {
-            AIContentPanel.Children.Add(new TextBlock
+            AIContentPanel.Children.Add(new Emoji.Wpf.TextBlock
             {
                 Text = title, Foreground = Brushes.White, FontSize = 16,
                 FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 0, 15),
@@ -387,8 +387,8 @@ namespace Kiosk
             var grid = new Grid();
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            var lb = new TextBlock { Text = label, Foreground = Brushes.LightBlue, FontSize = 12, FontWeight = FontWeights.SemiBold };
-            var vb = new TextBlock { Text = value, Foreground = Brushes.White, FontSize = 12, TextWrapping = TextWrapping.Wrap };
+            var lb = new Emoji.Wpf.TextBlock { Text = label, Foreground = Brushes.LightBlue, FontSize = 12, FontWeight = FontWeights.SemiBold };
+            var vb = new Emoji.Wpf.TextBlock { Text = value, Foreground = Brushes.White, FontSize = 12, TextWrapping = TextWrapping.Wrap };
             Grid.SetColumn(lb, 0); Grid.SetColumn(vb, 1);
             grid.Children.Add(lb); grid.Children.Add(vb);
             parent.Children.Add(grid);
@@ -402,13 +402,13 @@ namespace Kiosk
                 CornerRadius = new CornerRadius(8), Margin = new Thickness(0, 0, 0, 10), Padding = new Thickness(10)
             };
             var sp = new StackPanel();
-            sp.Children.Add(new TextBlock { Text = "🔄 Замены на сегодня:", Foreground = Brushes.White, FontWeight = FontWeights.Bold, FontSize = 13, Margin = new Thickness(0, 0, 0, 5) });
+            sp.Children.Add(new Emoji.Wpf.TextBlock { Text = "🔄 Замены на сегодня:", Foreground = Brushes.White, FontWeight = FontWeights.Bold, FontSize = 13, Margin = new Thickness(0, 0, 0, 5) });
             foreach (var r in replacements)
             {
                 var txt = $"{r.LessonNumber} урок: {r.ReplacementTeacher}";
                 if (!string.IsNullOrEmpty(r.Classroom) && r.Classroom != "-") txt += $" ({r.Classroom})";
                 if (!string.IsNullOrEmpty(r.Notes)) txt += $" - {r.Notes}";
-                sp.Children.Add(new TextBlock { Text = txt, Foreground = Brushes.White, FontSize = 11, Margin = new Thickness(10, 2, 0, 2), TextWrapping = TextWrapping.Wrap });
+                sp.Children.Add(new Emoji.Wpf.TextBlock { Text = txt, Foreground = Brushes.White, FontSize = 11, Margin = new Thickness(10, 2, 0, 2), TextWrapping = TextWrapping.Wrap });
             }
             border.Child = sp;
             AIContentPanel.Children.Add(border);
@@ -422,8 +422,8 @@ namespace Kiosk
                 CornerRadius = new CornerRadius(8), Margin = new Thickness(0, 0, 0, 10), Padding = new Thickness(10)
             };
             var sp = new StackPanel();
-            sp.Children.Add(new TextBlock { Text = "➡️ Следующий урок:", Foreground = Brushes.White, FontWeight = FontWeights.Bold, FontSize = 13, Margin = new Thickness(0, 0, 0, 5) });
-            sp.Children.Add(new TextBlock
+            sp.Children.Add(new Emoji.Wpf.TextBlock { Text = "➡️ Следующий урок:", Foreground = Brushes.White, FontWeight = FontWeights.Bold, FontSize = 13, Margin = new Thickness(0, 0, 0, 5) });
+            sp.Children.Add(new Emoji.Wpf.TextBlock
             {
                 Text = $"{nextLesson.Number} урок: {nextLesson.Subject}\nУчитель: {nextLesson.Teacher}\nКабинет: {nextLesson.Classroom}",
                 Foreground = Brushes.White, FontSize = 11, TextWrapping = TextWrapping.Wrap
@@ -440,13 +440,13 @@ namespace Kiosk
                 CornerRadius = new CornerRadius(8), Margin = new Thickness(0, 0, 0, 10), Padding = new Thickness(10)
             };
             var sp = new StackPanel();
-            sp.Children.Add(new TextBlock { Text = $"📅 Расписание на сегодня ({lessons.Count} уроков):", Foreground = Brushes.White, FontWeight = FontWeights.Bold, FontSize = 13, Margin = new Thickness(0, 0, 0, 5) });
+            sp.Children.Add(new Emoji.Wpf.TextBlock { Text = $"📅 Расписание на сегодня ({lessons.Count} уроков):", Foreground = Brushes.White, FontWeight = FontWeights.Bold, FontSize = 13, Margin = new Thickness(0, 0, 0, 5) });
             foreach (var l in lessons.OrderBy(x => x.Number))
             {
                 var t = $"{l.Number}. {l.Time} - {l.Subject}";
                 if (!string.IsNullOrEmpty(l.Teacher)) t += $" ({l.Teacher})";
                 if (!string.IsNullOrEmpty(l.Classroom)) t += $" - {l.Classroom}";
-                sp.Children.Add(new TextBlock { Text = t, Foreground = Brushes.White, FontSize = 11, Margin = new Thickness(10, 2, 0, 2), TextWrapping = TextWrapping.Wrap });
+                sp.Children.Add(new Emoji.Wpf.TextBlock { Text = t, Foreground = Brushes.White, FontSize = 11, Margin = new Thickness(10, 2, 0, 2), TextWrapping = TextWrapping.Wrap });
             }
             border.Child = sp;
             AIContentPanel.Children.Add(border);

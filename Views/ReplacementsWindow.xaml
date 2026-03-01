@@ -1,6 +1,7 @@
 <Window x:Class="Kiosk.Views.ReplacementsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
         Title="Замены уроков"
         WindowState="Maximized"
         WindowStyle="None"
@@ -9,7 +10,7 @@
     <Window.Resources>
         <!-- Поддержка эмодзи -->
         <Style TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="Segoe UI Emoji, Segoe UI, sans-serif"/>
+            <Setter Property="FontFamily" Value="Segoe UI Emoji"/>
         </Style>
 
 
@@ -145,7 +146,7 @@
                 <SolidColorBrush Color="#1E4DB7"/>
             </Border.BorderBrush>
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                <TextBlock Text="✅" FontSize="64" TextAlignment="Center" Margin="0,0,0,20"/>
+                <emoji:TextBlock Text="✅" FontSize="64" TextAlignment="Center" Margin="0,0,0,20"/>
                 <TextBlock x:Name="NoReplacementsText"
                            Text="На сегодня замен нет"
                            FontSize="26" FontWeight="Bold"

@@ -1,8 +1,8 @@
 <Window x:Class="Kiosk.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
         Title="Школьный информационный киоск"
-        
         WindowState="Maximized"
         WindowStyle="None"
         KeyDown="Window_KeyDown"
@@ -204,10 +204,9 @@
                                     </Grid.ColumnDefinitions>
 
                                     <!-- Эмодзи погоды -->
-                                    <TextBlock x:Name="WeatherEmoji" Grid.Column="0"
+                                    <emoji:TextBlock x:Name="WeatherEmoji" Grid.Column="0"
                                                Text="🌤️" FontSize="48"
-                                               VerticalAlignment="Center" Margin="0,0,14,0"
-                                               FontFamily="Segoe UI Emoji"/>
+                                               VerticalAlignment="Center" Margin="0,0,14,0"/>
 
                                     <!-- Температура и описание -->
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">

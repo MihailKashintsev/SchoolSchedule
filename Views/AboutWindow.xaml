@@ -1,6 +1,7 @@
 <Window x:Class="Kiosk.Views.AboutWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
         Title="О проекте"
         
         WindowState="Maximized"
@@ -225,7 +226,7 @@
                             <Border.BorderBrush>
                                 <SolidColorBrush Color="#2A5298"/>
                             </Border.BorderBrush>
-                            <TextBlock Text="📬 Для связи: телеграмм: @RENDERGAMESRU"
+                            <emoji:TextBlock Text="📬 Для связи: телеграмм: @RENDERGAMESRU"
                                        FontSize="16" Foreground="#8AADD4" FontWeight="Medium"/>
                         </Border>
                     </StackPanel>
