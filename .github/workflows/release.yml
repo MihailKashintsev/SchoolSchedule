@@ -36,17 +36,34 @@ jobs:
             }
           }
 
-      - name: Remove version attributes from AssemblyInfo
+      - name: Update AssemblyInfo.cs version
         shell: powershell
         run: |
+          $ver = "${{ steps.version.outputs.VERSION }}"
+          $verFull = "$ver.0"   # например 1.0.3.0
           $file = "Properties\AssemblyInfo.cs"
+
           if (Test-Path $file) {
             $content = Get-Content $file -Raw
-            # Убираем AssemblyVersion и AssemblyFileVersion - они конфликтуют с -p:AssemblyVersion
-            $content = $content -replace '\[assembly:\s*AssemblyVersion\("[^"]*"\)\]', ''
-            $content = $content -replace '\[assembly:\s*AssemblyFileVersion\("[^"]*"\)\]', ''
-            Set-Content $file $content -NoNewline
-            Write-Host "Stripped version attributes from AssemblyInfo.cs"
+
+            # Заменяем AssemblyVersion и AssemblyFileVersion на версию из тега
+            $content = $content -replace '\[assembly:\s*AssemblyVersion\("[^"]*"\)\]',
+                "[assembly: AssemblyVersion(`"$verFull`")]"
+            $content = $content -replace '\[assembly:\s*AssemblyFileVersion\("[^"]*"\)\]',
+                "[assembly: AssemblyFileVersion(`"$verFull`")]"
+
+            # Если InformationalVersion уже есть — заменяем, если нет — добавляем
+            if ($content -match 'AssemblyInformationalVersion') {
+                $content = $content -replace '\[assembly:\s*AssemblyInformationalVersion\("[^"]*"\)\]',
+                    "[assembly: AssemblyInformationalVersion(`"$ver`")]"
+            } else {
+                $content += "`n[assembly: AssemblyInformationalVersion(`"$ver`")]"
+            }
+
+            Set-Content $file $content -NoNewline -Encoding UTF8
+            Write-Host "AssemblyInfo.cs updated to version $ver"
+          } else {
+            Write-Warning "Properties\AssemblyInfo.cs not found"
           }
 
       - name: Restore dependencies
@@ -126,14 +143,13 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: "SchoolSchedule ${{ github.ref_name }}"
           body: |
-            ## SchoolSchedule ${{ github.ref_name }}
+            SchoolSchedule ${{ github.ref_name }}
 
-            ### Install
-            - **Installer** — download `SchoolSchedule-Setup-v${{ steps.version.outputs.VERSION }}.exe` and run it
-            - **Portable** — download ZIP, unpack and run `Kiosk.exe`
+            Установка:
+            - Установщик: скачайте SchoolSchedule-Setup-v${{ steps.version.outputs.VERSION }}.exe и запустите
+            - Portable: скачайте ZIP, распакуйте и запустите Kiosk.exe
 
-            ### Auto-update
-            The app checks for updates automatically on every launch.
+            Приложение проверяет обновления автоматически при каждом запуске.
           files: |
             SchoolSchedule-v${{ steps.version.outputs.VERSION }}.zip
             installer/Output/SchoolSchedule-Setup-v${{ steps.version.outputs.VERSION }}.exe
