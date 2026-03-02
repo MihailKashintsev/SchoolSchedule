@@ -182,7 +182,7 @@ namespace Kiosk
 
         // ─── Баннеры ─────────────────────────────────────────────────────────
 
-        private void LoadBannerSettings()
+        private async void LoadBannerSettings()
         {
             if (App.Settings.EnableBanners && !string.IsNullOrEmpty(App.Settings.BannerImagePaths))
             {
@@ -194,13 +194,21 @@ namespace Kiosk
                 _bannerImages.Clear();
                 foreach (var path in paths)
                 {
-                    if (File.Exists(path))
-                        _bannerImages.Add(path);
-                    else
+                    try
                     {
-                        var appPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Path.GetFileName(path));
-                        if (File.Exists(appPath)) _bannerImages.Add(appPath);
+                        // Поддержка URL — скачиваем в кеш
+                        var localPath = await Services.FileSourceService.GetLocalPathAsync(path);
+                        if (!string.IsNullOrEmpty(localPath) && File.Exists(localPath))
+                        {
+                            _bannerImages.Add(localPath);
+                            continue;
+                        }
                     }
+                    catch { }
+
+                    // Fallback: локальный путь рядом с exe
+                    var appPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Path.GetFileName(path));
+                    if (File.Exists(appPath)) _bannerImages.Add(appPath);
                 }
 
                 if (_bannerImages.Count > 0)
@@ -460,7 +468,7 @@ namespace Kiosk
             {
                 _scheduleData = await _scheduleService.LoadScheduleAsync(App.Settings.ScheduleFilePath);
                 UpdateClassComboBox();
-                _replacementData = _replacementService.LoadReplacements(App.Settings.ReplacementsFilePath);
+                _replacementData = await _replacementService.LoadReplacementsAsync(App.Settings.ReplacementsFilePath);
                 StatusText.Text = _replacementData != null && _replacementData.HasReplacements
                     ? $"Данные загружены ({_scheduleData.Schedules.Count} классов, есть замены)"
                     : $"Данные загружены ({_scheduleData.Schedules.Count} классов, замен нет)";

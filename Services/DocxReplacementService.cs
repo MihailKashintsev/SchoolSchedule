@@ -1,4 +1,4 @@
-﻿using Kiosk.Models;
+using Kiosk.Models;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System;
@@ -12,19 +12,32 @@ namespace Kiosk.Services
 {
     public class DocxReplacementService
     {
-        public ReplacementData LoadReplacements(string filePath)
+        public async System.Threading.Tasks.Task<ReplacementData> LoadReplacementsAsync(string filePath)
         {
             var replacementData = new ReplacementData();
 
             try
             {
-                if (!File.Exists(filePath))
+                // Поддержка URL (Google Drive, Dropbox, OneDrive и т.д.)
+                var localPath = await FileSourceService.GetLocalPathAsync(filePath);
+                if (string.IsNullOrEmpty(localPath) || !File.Exists(localPath))
                 {
-                    MessageBox.Show($"Файл замен не найден: {filePath}", "Информация",
-                                  MessageBoxButton.OK, MessageBoxImage.Information);
+                    if (!FileSourceService.IsUrl(filePath))
+                        MessageBox.Show($"Файл замен не найден: {filePath}", "Информация",
+                            MessageBoxButton.OK, MessageBoxImage.Information);
                     return replacementData;
                 }
+                filePath = localPath;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка загрузки файла замен: {ex.Message}", "Ошибка",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return replacementData;
+            }
 
+            try
+            {
                 using (WordprocessingDocument doc = WordprocessingDocument.Open(filePath, false))
                 {
                     var body = doc.MainDocumentPart.Document.Body;

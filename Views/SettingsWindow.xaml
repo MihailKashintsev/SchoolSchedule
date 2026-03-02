@@ -120,7 +120,12 @@
                 <!-- Файл расписания -->
                 <GroupBox Header="Файл расписания">
                     <StackPanel>
-                        <TextBox x:Name="SchedulePathTextBox" MinHeight="34" Margin="0,3,0,6"/>
+                        <TextBlock Text="Локальный путь или URL (Google Drive, Dropbox, OneDrive...)"
+                                   FontSize="11" Foreground="#4A6FA5" Margin="0,3,0,4"/>
+                        <TextBox x:Name="SchedulePathTextBox" MinHeight="34" Margin="0,0,0,4"
+                                 ToolTip="Пример URL: https://drive.google.com/uc?export=download&amp;id=FILE_ID"/>
+                        <TextBlock Text="Для Google Drive: откройте файл → Поделиться → Скопировать ссылку → вставьте сюда"
+                                   FontSize="10" Foreground="#2A4A6A" TextWrapping="Wrap" Margin="0,0,0,6"/>
                         <Button Content="Выбрать файл..." Click="BrowsePathButton_Click" MinHeight="36"/>
                     </StackPanel>
                 </GroupBox>
@@ -147,7 +152,7 @@
                 </GroupBox>
 
                 <!-- Файл замен -->
-                <GroupBox Header="Файл замен (.docx)">
+                <GroupBox Header="Файл замен (.docx) — локальный путь или URL">
                     <StackPanel>
                         <Grid Margin="0,3,0,6">
                             <Grid.ColumnDefinitions>
@@ -159,7 +164,7 @@
                                     Click="BrowseReplacementsPath_Click"/>
                         </Grid>
                         <TextBlock FontSize="11" Foreground="#4A6FA5" TextWrapping="Wrap"
-                                   Text="Файл замен должен быть в формате DOCX и обновляться ежедневно"/>
+                                   Text="Файл замен: локальный путь к .docx или прямая ссылка на скачивание (Google Drive, Dropbox...)"/>
                     </StackPanel>
                 </GroupBox>
 
@@ -177,7 +182,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBox x:Name="BannerPathsTextBox" MinHeight="34" Margin="0,0,8,0"
-                                     ToolTip="Пути к PNG-файлам, разделённые точкой с запятой"/>
+                                     ToolTip="Локальные пути к PNG-файлам или URL, разделённые точкой с запятой"/>
                             <Button Grid.Column="1" Content="Обзор..." MinHeight="34" MinWidth="80"
                                     Click="BrowseBannerPaths_Click"/>
                         </Grid>

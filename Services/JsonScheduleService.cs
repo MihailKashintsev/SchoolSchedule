@@ -1,4 +1,4 @@
-﻿using Kiosk.Models;
+using Kiosk.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -13,17 +13,30 @@ namespace Kiosk.Services
     {
         public async Task<ScheduleData> LoadScheduleAsync(string filePath)
         {
+            try
+            {
+                // Поддержка URL (Google Drive, Dropbox, OneDrive и т.д.)
+                var localPath = await FileSourceService.GetLocalPathAsync(filePath);
+                if (string.IsNullOrEmpty(localPath) || !File.Exists(localPath))
+                {
+                    if (!FileSourceService.IsUrl(filePath))
+                        MessageBox.Show($"Файл расписания не найден: {filePath}", "Ошибка",
+                            MessageBoxButton.OK, MessageBoxImage.Information);
+                    return CreateEmptySchedule();
+                }
+                filePath = localPath;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка загрузки файла расписания: {ex.Message}", "Ошибка",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return CreateEmptySchedule();
+            }
+
             return await Task.Run(() =>
             {
                 try
                 {
-                    if (!File.Exists(filePath))
-                    {
-                        MessageBox.Show($"Файл расписания не найден: {filePath}", "Ошибка",
-                                      MessageBoxButton.OK, MessageBoxImage.Information);
-                        return CreateEmptySchedule();
-                    }
-
                     string json = File.ReadAllText(filePath);
                     var scheduleData = JsonConvert.DeserializeObject<ScheduleData>(json);
 

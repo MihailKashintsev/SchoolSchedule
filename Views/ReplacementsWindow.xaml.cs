@@ -53,7 +53,7 @@ namespace Kiosk.Views
 
             try
             {
-                _replacementData = _replacementService.LoadReplacements(App.Settings.ReplacementsFilePath);
+                _replacementData = await _replacementService.LoadReplacementsAsync(App.Settings.ReplacementsFilePath);
 
                 if (_replacementData != null && _replacementData.HasReplacements)
                 {
