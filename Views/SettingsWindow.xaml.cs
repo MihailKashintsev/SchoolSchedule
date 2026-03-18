@@ -20,6 +20,8 @@ namespace Kiosk
             SchedulePathTextBox.Text = App.Settings.ScheduleFilePath;
             MapUrl.Text = App.Settings.MapUrl;
             NewsUrl.Text = App.Settings.NewsUrl;
+            AllowedNewsUrlsBox.Text = App.Settings.AllowedNewsUrls?.Replace(";", "\n") ?? "";
+            GigaChatApiKeyBox.Text = App.Settings.GigaChatApiKey ?? "";
             AutoRefreshCheckBox.IsChecked = App.Settings.AutoRefresh;
             RefreshIntervalTextBox.Text = App.Settings.RefreshInterval.ToString();
             ShowKeyboardCheckBox.IsChecked = App.Settings.ShowKeyboardForPassword;
@@ -30,7 +32,6 @@ namespace Kiosk
             BannerSwitchIntervalTextBox.Text = App.Settings.BannerSwitchInterval.ToString();
             EnableBannersCheckBox.IsChecked = App.Settings.EnableBanners;
 
-            // Погода
             WeatherEnabledCheckBox.IsChecked = App.Settings.WeatherEnabled;
             WeatherCityBox.Text = App.Settings.WeatherCity ?? "";
             WeatherLatBox.Text = App.Settings.WeatherLat.HasValue
@@ -124,6 +125,13 @@ namespace Kiosk
             App.Settings.ScheduleFilePath = SchedulePathTextBox.Text;
             App.Settings.MapUrl = MapUrl.Text;
             App.Settings.NewsUrl = NewsUrl.Text;
+
+            App.Settings.AllowedNewsUrls = AllowedNewsUrlsBox.Text
+                .Replace("\r\n", ";").Replace("\n", ";").Replace("\r", ";")
+                .Trim(';');
+
+            App.Settings.GigaChatApiKey = GigaChatApiKeyBox.Text.Trim();
+
             App.Settings.ReplacementsFilePath = ReplacementsPathTextBox.Text;
             App.Settings.AutoRefresh = AutoRefreshCheckBox.IsChecked ?? true;
             App.Settings.ShowKeyboardForPassword = ShowKeyboardCheckBox.IsChecked ?? true;
@@ -138,7 +146,6 @@ namespace Kiosk
             if (int.TryParse(BannerSwitchIntervalTextBox.Text, out int sw) && sw > 0)
                 App.Settings.BannerSwitchInterval = sw;
 
-            // Погода
             App.Settings.WeatherEnabled = WeatherEnabledCheckBox.IsChecked ?? true;
             App.Settings.WeatherCity = WeatherCityBox.Text.Trim();
 

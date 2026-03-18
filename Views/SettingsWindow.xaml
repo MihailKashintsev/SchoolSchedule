@@ -120,12 +120,7 @@
                 <!-- Файл расписания -->
                 <GroupBox Header="Файл расписания">
                     <StackPanel>
-                        <TextBlock Text="Локальный путь или URL (Google Drive, Dropbox, OneDrive...)"
-                                   FontSize="11" Foreground="#4A6FA5" Margin="0,3,0,4"/>
-                        <TextBox x:Name="SchedulePathTextBox" MinHeight="34" Margin="0,0,0,4"
-                                 ToolTip="Пример URL: https://drive.google.com/uc?export=download&amp;id=FILE_ID"/>
-                        <TextBlock Text="Для Google Drive: откройте файл → Поделиться → Скопировать ссылку → вставьте сюда"
-                                   FontSize="10" Foreground="#2A4A6A" TextWrapping="Wrap" Margin="0,0,0,6"/>
+                        <TextBox x:Name="SchedulePathTextBox" MinHeight="34" Margin="0,3,0,6"/>
                         <Button Content="Выбрать файл..." Click="BrowsePathButton_Click" MinHeight="36"/>
                     </StackPanel>
                 </GroupBox>
@@ -136,8 +131,37 @@
                 </GroupBox>
 
                 <!-- Новости -->
-                <GroupBox Header="Ссылка для новостей">
-                    <TextBox x:Name="NewsUrl" MinHeight="34" Margin="0,3,0,0"/>
+                <GroupBox Header="Новости">
+                    <StackPanel>
+                        <TextBlock Text="Стартовая страница (главная ссылка):" Margin="0,0,0,4"/>
+                        <TextBox x:Name="NewsUrl" MinHeight="34" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Разрешённые URL (белый список):" Margin="0,0,0,4"/>
+                        <TextBlock FontSize="11" Foreground="#4A6FA5" TextWrapping="Wrap" Margin="0,0,0,4"
+                                   Text="Домен стартовой страницы добавляется автоматически. Здесь укажите дополнительные разрешённые адреса — каждый на новой строке или через точку с запятой."/>
+                        <TextBox x:Name="AllowedNewsUrlsBox"
+                                 MinHeight="80" MaxHeight="120"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 VerticalScrollBarVisibility="Auto"
+                                 Margin="0,0,0,4"
+                                 ToolTip="Примеры: vk.com/myschool&#x0a;t.me/mychannel&#x0a;school.ru"/>
+                        <TextBlock FontSize="10" Foreground="#2A4A6A" TextWrapping="Wrap"
+                                   Text="Пример: vk.com/mypage; t.me/mychannel; myschool.ru"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- ИИ-помощник -->
+                <GroupBox Header="🤖 ИИ-помощник (GigaChat)">
+                    <StackPanel>
+                        <TextBlock Text="API-ключ GigaChat:" Margin="0,0,0,4"/>
+                        <TextBlock FontSize="11" Foreground="#4A6FA5" TextWrapping="Wrap" Margin="0,0,0,4"
+                                   Text="Ключ из личного кабинета: developers.sber.ru → GigaChat API → Авторизационные данные (Client Secret, Base64)"/>
+                        <TextBox x:Name="GigaChatApiKeyBox" MinHeight="34" Margin="0,0,0,4"
+                                 ToolTip="Вставьте Client Secret (Base64) из личного кабинета GigaChat"/>
+                        <TextBlock FontSize="10" Foreground="#2A4A6A" TextWrapping="Wrap"
+                                   Text="Оставьте пустым чтобы отключить ИИ-помощника."/>
+                    </StackPanel>
                 </GroupBox>
 
                 <!-- Безопасность -->
@@ -152,7 +176,7 @@
                 </GroupBox>
 
                 <!-- Файл замен -->
-                <GroupBox Header="Файл замен (.docx) — локальный путь или URL">
+                <GroupBox Header="Файл замен (.docx)">
                     <StackPanel>
                         <Grid Margin="0,3,0,6">
                             <Grid.ColumnDefinitions>
@@ -164,7 +188,7 @@
                                     Click="BrowseReplacementsPath_Click"/>
                         </Grid>
                         <TextBlock FontSize="11" Foreground="#4A6FA5" TextWrapping="Wrap"
-                                   Text="Файл замен: локальный путь к .docx или прямая ссылка на скачивание (Google Drive, Dropbox...)"/>
+                                   Text="Файл замен должен быть в формате DOCX и обновляться ежедневно"/>
                     </StackPanel>
                 </GroupBox>
 
@@ -182,7 +206,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBox x:Name="BannerPathsTextBox" MinHeight="34" Margin="0,0,8,0"
-                                     ToolTip="Локальные пути к PNG-файлам или URL, разделённые точкой с запятой"/>
+                                     ToolTip="Пути к PNG-файлам, разделённые точкой с запятой"/>
                             <Button Grid.Column="1" Content="Обзор..." MinHeight="34" MinWidth="80"
                                     Click="BrowseBannerPaths_Click"/>
                         </Grid>

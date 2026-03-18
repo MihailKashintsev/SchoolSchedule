@@ -14,17 +14,42 @@ namespace Kiosk.Views
     {
         public string DefaultNewsUrl = App.Settings.NewsUrl;
 
-        // БЕЛЫЙ СПИСОК: только эти страницы разрешены
-        private readonly HashSet<string> _allowedUrlPatterns = new HashSet<string>
+        // Белый список разрешённых URL — строится из настроек + автоматически из NewsUrl
+        private readonly HashSet<string> _allowedUrlPatterns = new HashSet<string>();
+
+        /// <summary>
+        /// Строит белый список из настроек.
+        /// Всегда добавляет домен NewsUrl автоматически.
+        /// Дополнительные паттерны берёт из App.Settings.AllowedNewsUrls (через ; или новую строку).
+        /// </summary>
+        private void BuildAllowedPatterns()
         {
-            "vk.com/school_liga_khimki",
-            "vk.com/feed",
-            "vk.com/school_liga_khimki?w=",
-            "vk.com/wall",
-            "vk.com/video",
-            "vk.com/photo",
-            "m.vk.com/school_liga_khimki"
-        };
+            _allowedUrlPatterns.Clear();
+
+            // Автоматически добавляем домен стартовой страницы
+            if (!string.IsNullOrWhiteSpace(DefaultNewsUrl))
+            {
+                try
+                {
+                    var uri = new Uri(DefaultNewsUrl);
+                    _allowedUrlPatterns.Add(uri.Host.ToLower());
+                }
+                catch { }
+            }
+
+            // Добавляем паттерны из настроек
+            if (!string.IsNullOrWhiteSpace(App.Settings.AllowedNewsUrls))
+            {
+                var patterns = App.Settings.AllowedNewsUrls
+                    .Split(new[] { ';', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var p in patterns)
+                {
+                    var trimmed = p.Trim().ToLower();
+                    if (!string.IsNullOrWhiteSpace(trimmed))
+                        _allowedUrlPatterns.Add(trimmed);
+                }
+            }
+        }
 
         private DispatcherTimer _resetTimer;
         private DispatcherTimer _sessionCleanerTimer;
@@ -40,6 +65,9 @@ namespace Kiosk.Views
 
             // Создаем временную папку для данных браузера
             _tempUserDataFolder = Path.Combine(Path.GetTempPath(), "KioskBrowser_" + Guid.NewGuid().ToString());
+
+            // Строим белый список из настроек
+            BuildAllowedPatterns();
 
             InitializeAsync();
 

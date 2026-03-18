@@ -1,9 +1,8 @@
+using Kiosk.Services;
 using Newtonsoft.Json;
-using System;
 using System.IO;
 using System.Reflection;
 using System.Windows;
-using System.Windows.Threading;
 
 namespace Kiosk
 {
@@ -11,84 +10,71 @@ namespace Kiosk
     {
         public static Settings Settings { get; private set; }
 
+        /// <summary>Версия из AssemblyInformationalVersion (проставляется при релизе)</summary>
         public static string Version
         {
             get
             {
-                var asm = System.Reflection.Assembly.GetExecutingAssembly();
-                var attr = asm.GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>();
-                if (attr != null && !string.IsNullOrWhiteSpace(attr.InformationalVersion))
-                    return attr.InformationalVersion;
-                var v = asm.GetName().Version;
-                return v != null ? $"{v.Major}.{v.Minor}.{v.Build}" : "1.0.0";
+                var v = Assembly.GetExecutingAssembly()
+                    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                    ?.InformationalVersion;
+                return string.IsNullOrWhiteSpace(v) ? "1.0.0" : v;
             }
         }
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            // Глобальные обработчики — пишем любую необработанную ошибку в лог
-            AppDomain.CurrentDomain.UnhandledException += (s, ex) =>
-                LogError("UnhandledException", ex.ExceptionObject as Exception);
-
-            DispatcherUnhandledException += (s, ex) =>
-            {
-                LogError("DispatcherUnhandledException", ex.Exception);
-                ex.Handled = true; // не даём приложению молча умереть
-                MessageBox.Show(
-                    $"Ошибка запуска:\n\n{ex.Exception.Message}\n\nПодробности в crash.log рядом с Kiosk.exe",
-                    "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                Shutdown(1);
-            };
-
             base.OnStartup(e);
+
+            // Данные приложения — в AppData, а не рядом с exe
+            Directory.CreateDirectory(Program.DataFolder);
+
             LoadSettings();
 
-            // Проверяем обновления в фоне
-            _ = Kiosk.Services.AutoUpdateService.CheckForUpdatesAsync(silent: true);
+            // Автообновление
+            _ = AutoUpdateService.CheckForUpdatesAsync(silent: true);
         }
-
-        private static void LogError(string source, Exception ex)
-        {
-            try
-            {
-                var logPath = Path.Combine(
-                    AppDomain.CurrentDomain.BaseDirectory, "crash.log");
-                var text = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {source}\n" +
-                           $"{ex?.GetType().FullName}: {ex?.Message}\n" +
-                           $"{ex?.StackTrace}\n" +
-                           $"Inner: {ex?.InnerException?.Message}\n" +
-                           new string('-', 60) + "\n";
-                File.AppendAllText(logPath, text);
-            }
-            catch { }
-        }
-
-        private static string SettingsPath =>
-            Path.Combine(Program.DataFolder, "settings.json");
 
         private void LoadSettings()
         {
-            if (File.Exists(SettingsPath))
+            string settingsPath = Path.Combine(Program.DataFolder, "settings.json");
+
+            // Совместимость: если старый файл рядом с exe — переносим
+            var legacyPath = "settings.json";
+            if (!File.Exists(settingsPath) && File.Exists(legacyPath))
+            {
+                File.Copy(legacyPath, settingsPath);
+            }
+
+            if (File.Exists(settingsPath))
             {
                 try
                 {
-                    string json = File.ReadAllText(SettingsPath);
-                    Settings = JsonConvert.DeserializeObject<Settings>(json);
+                    string json = File.ReadAllText(settingsPath);
+                    Settings = JsonConvert.DeserializeObject<Settings>(json) ?? new Settings();
                 }
-                catch { Settings = new Settings(); }
+                catch
+                {
+                    Settings = new Settings();
+                }
             }
-            else { Settings = new Settings(); }
+            else
+            {
+                Settings = new Settings();
+            }
         }
 
         public static void SaveSettings()
         {
+            string settingsPath = Path.Combine(Program.DataFolder, "settings.json");
             string json = JsonConvert.SerializeObject(Settings, Formatting.Indented);
-            File.WriteAllText(SettingsPath, json);
+            File.WriteAllText(settingsPath, json);
         }
     }
 
     public class Settings
     {
+        // Основные
         public string ScheduleFilePath { get; set; } = "schedule.json";
         public string MapUrl { get; set; } = "https://example.com/map";
         public string NewsUrl { get; set; } = "https://example.com/news";
@@ -98,9 +84,9 @@ namespace Kiosk
         public bool ShowKeyboardForPassword { get; set; } = true;
         public string AdminPassword { get; set; } = "1234";
 
-        // Название школы
-        public string SchoolFullName { get; set; } = "Муниципальное общеобразовательное учреждение";
-        public string SchoolShortName { get; set; } = "МОУ";
+        // Названия школы
+        public string SchoolFullName { get; set; } = "Название школы";
+        public string SchoolShortName { get; set; } = "Школа";
 
         // Баннеры
         public string BannerImagePaths { get; set; } = "";
@@ -113,5 +99,11 @@ namespace Kiosk
         public string WeatherCity { get; set; } = "";
         public double? WeatherLat { get; set; } = null;
         public double? WeatherLon { get; set; } = null;
+
+        // Новости — белый список URL
+        public string AllowedNewsUrls { get; set; } = "";
+
+        // GigaChat API
+        public string GigaChatApiKey { get; set; } = "";
     }
 }

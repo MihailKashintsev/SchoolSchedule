@@ -6,29 +6,27 @@
         WindowState="Maximized"
         WindowStyle="None"
         KeyDown="Window_KeyDown"
-        Background="#0D1B2A">
+        Background="#060E1A">
 
     <Window.Resources>
-        <!-- Поддержка эмодзи -->
+
         <Style TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI Emoji"/>
         </Style>
 
-
-        <!-- Стиль главных кнопок меню (сенсорный) -->
+        <!-- Главные кнопки меню -->
         <Style x:Key="MainMenuButton" TargetType="Button">
-            <Setter Property="Margin" Value="10"/>
+            <Setter Property="Margin" Value="8"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border"
-                                CornerRadius="24"
+                        <Border x:Name="border" CornerRadius="28"
                                 Background="{TemplateBinding Background}">
                             <Border.Effect>
-                                <DropShadowEffect Color="#000000" Opacity="0.45"
-                                                  BlurRadius="22" ShadowDepth="7"/>
+                                <DropShadowEffect Color="#000" Opacity="0.5"
+                                                  BlurRadius="30" ShadowDepth="8"/>
                             </Border.Effect>
                             <ContentPresenter HorizontalAlignment="Center"
                                               VerticalAlignment="Center"/>
@@ -37,14 +35,13 @@
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="border" Property="RenderTransform">
                                     <Setter.Value>
-                                        <ScaleTransform ScaleX="0.96" ScaleY="0.96"
-                                                        CenterX="0.5" CenterY="0.5"/>
+                                        <ScaleTransform ScaleX="0.95" ScaleY="0.95"/>
                                     </Setter.Value>
                                 </Setter>
-                                <Setter TargetName="border" Property="Opacity" Value="0.82"/>
+                                <Setter TargetName="border" Property="Opacity" Value="0.85"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Opacity" Value="0.88"/>
+                                <Setter TargetName="border" Property="Opacity" Value="0.90"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -52,19 +49,20 @@
             </Setter>
         </Style>
 
-        <!-- Стиль кнопки настроек -->
+        <!-- Кнопка настроек -->
         <Style x:Key="SmallButton" TargetType="Button">
-            <Setter Property="Width" Value="68"/>
-            <Setter Property="Height" Value="68"/>
+            <Setter Property="Width" Value="72"/>
+            <Setter Property="Height" Value="72"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" CornerRadius="16" Background="#1E3A5F">
+                        <Border x:Name="border" CornerRadius="18"
+                                Background="#1A3560">
                             <Border.Effect>
-                                <DropShadowEffect Color="#000" Opacity="0.3"
-                                                  BlurRadius="10" ShadowDepth="3"/>
+                                <DropShadowEffect Color="#000" Opacity="0.35"
+                                                  BlurRadius="12" ShadowDepth="3"/>
                             </Border.Effect>
                             <ContentPresenter HorizontalAlignment="Center"
                                               VerticalAlignment="Center"/>
@@ -83,15 +81,15 @@
             </Setter>
         </Style>
 
-        <!-- ComboBox — чёрный текст на белом фоне -->
+        <!-- ComboBox -->
         <Style x:Key="TouchComboBox" TargetType="ComboBox">
-            <Setter Property="Height" Value="60"/>
-            <Setter Property="FontSize" Value="22"/>
-            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="Height" Value="64"/>
+            <Setter Property="FontSize" Value="26"/>
+            <Setter Property="Foreground" Value="#0D1B2A"/>
             <Setter Property="Background" Value="White"/>
             <Setter Property="BorderBrush" Value="#2A5298"/>
             <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="Padding" Value="16,0"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
 
@@ -99,54 +97,55 @@
 
     <Grid>
 
+        <!-- Фон с градиентом -->
         <Grid.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="#0D1B2A" Offset="0"/>
-                <GradientStop Color="#1A2F4A" Offset="0.5"/>
-                <GradientStop Color="#0A1628" Offset="1"/>
+                <GradientStop Color="#060E1A" Offset="0"/>
+                <GradientStop Color="#0D1F35" Offset="0.5"/>
+                <GradientStop Color="#060E1A" Offset="1"/>
             </LinearGradientBrush>
         </Grid.Background>
 
-        <!-- Декоративные круги фона -->
-        <Canvas IsHitTestVisible="False" Opacity="0.05">
-            <Ellipse Canvas.Left="-150" Canvas.Top="-150" Width="500" Height="500"
-                     Fill="Transparent" Stroke="#4A90D9" StrokeThickness="80"/>
-            <Ellipse Canvas.Left="900" Canvas.Top="300" Width="350" Height="350"
-                     Fill="Transparent" Stroke="#7B61FF" StrokeThickness="70"/>
+        <!-- Декоративные круги -->
+        <Canvas IsHitTestVisible="False" Opacity="0.04">
+            <Ellipse Canvas.Left="-200" Canvas.Top="-200" Width="700" Height="700"
+                     Fill="Transparent" Stroke="#4A90D9" StrokeThickness="100"/>
+            <Ellipse Canvas.Right="-100" Canvas.Bottom="-100" Width="500" Height="500"
+                     Fill="Transparent" Stroke="#7B61FF" StrokeThickness="90"/>
         </Canvas>
 
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>  <!-- ШАПКА -->
+                <RowDefinition Height="*"/>     <!-- КОНТЕНТ -->
+                <RowDefinition Height="Auto"/>  <!-- СТАТУС -->
             </Grid.RowDefinitions>
 
-            <!-- ШАПКА -->
-            <Border Grid.Row="0" Padding="28,16,28,16">
+            <!-- ══════════════ ШАПКА ══════════════ -->
+            <Border Grid.Row="0" Padding="32,18,32,18">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                        <GradientStop Color="#0D1F35" Offset="0"/>
-                        <GradientStop Color="#122840" Offset="0.5"/>
-                        <GradientStop Color="#0D1F35" Offset="1"/>
+                        <GradientStop Color="#091728" Offset="0"/>
+                        <GradientStop Color="#0F2342" Offset="0.5"/>
+                        <GradientStop Color="#091728" Offset="1"/>
                     </LinearGradientBrush>
                 </Border.Background>
                 <Border.Effect>
-                    <DropShadowEffect Color="#000" Opacity="0.5" BlurRadius="20"
-                                      ShadowDepth="4" Direction="270"/>
+                    <DropShadowEffect Color="#000" Opacity="0.6" BlurRadius="24"
+                                      ShadowDepth="5" Direction="270"/>
                 </Border.Effect>
 
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>    <!-- Логотип -->
-                        <ColumnDefinition Width="*"/>       <!-- Название школы -->
-                        <ColumnDefinition Width="Auto"/>    <!-- Погода -->
-                        <ColumnDefinition Width="Auto"/>    <!-- Время + кнопка -->
+                        <ColumnDefinition Width="Auto"/>   <!-- Логотип -->
+                        <ColumnDefinition Width="*"/>      <!-- Название -->
+                        <ColumnDefinition Width="Auto"/>   <!-- Погода -->
+                        <ColumnDefinition Width="Auto"/>   <!-- Время + настройки -->
                     </Grid.ColumnDefinitions>
 
                     <!-- Логотип -->
-                    <Border Grid.Column="0" Width="84" Height="84" CornerRadius="18"
-                            Margin="0,0,22,0">
+                    <Border Grid.Column="0" Width="96" Height="96"
+                            CornerRadius="22" Margin="0,0,24,0">
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                 <GradientStop Color="#1E4DB7" Offset="0"/>
@@ -154,25 +153,25 @@
                             </LinearGradientBrush>
                         </Border.Background>
                         <Image Source="pack://application:,,,/Images/Logo.png"
-                               Stretch="Uniform" Margin="8"/>
+                               Stretch="Uniform" Margin="10"/>
                     </Border>
 
                     <!-- Название школы -->
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock x:Name="SchoolFullNameText"
                                    Text="Муниципальное бюджетное общеобразовательное учреждение"
-                                   Foreground="#8AADD4" FontSize="17" FontWeight="Normal"
-                                   TextWrapping="Wrap" Margin="0,0,0,5"/>
+                                   Foreground="#6A94C4" FontSize="18"
+                                   TextWrapping="Wrap" Margin="0,0,0,4"/>
                         <TextBlock x:Name="SchoolShortNameText"
-                                   Text="Средняя общеобразовательная школа «Лига первых»"
-                                   Foreground="White" FontSize="27" FontWeight="Bold"
+                                   Text="Средняя общеобразовательная школа"
+                                   Foreground="White" FontSize="32" FontWeight="Bold"
                                    TextWrapping="Wrap"/>
                     </StackPanel>
 
                     <!-- ВИДЖЕТ ПОГОДЫ -->
                     <Border x:Name="WeatherPanel" Grid.Column="2"
-                            CornerRadius="18" Margin="20,0" Padding="18,12"
-                            VerticalAlignment="Center" MinWidth="200"
+                            CornerRadius="20" Margin="24,0" Padding="20,14"
+                            VerticalAlignment="Center" MinWidth="220"
                             BorderThickness="1" Visibility="Collapsed">
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
@@ -181,229 +180,222 @@
                             </LinearGradientBrush>
                         </Border.Background>
                         <Border.BorderBrush>
-                            <SolidColorBrush Color="#1E4DB7" Opacity="0.5"/>
+                            <SolidColorBrush Color="#1E4DB7" Opacity="0.6"/>
                         </Border.BorderBrush>
                         <Border.Effect>
-                            <DropShadowEffect Color="#1E4DB7" Opacity="0.3"
-                                              BlurRadius="18" ShadowDepth="0"/>
+                            <DropShadowEffect Color="#1E4DB7" Opacity="0.25"
+                                              BlurRadius="20" ShadowDepth="0"/>
                         </Border.Effect>
-
                         <Grid>
-                            <!-- Показывается пока грузится -->
                             <TextBlock x:Name="WeatherLoadingText"
                                        Text="Загрузка погоды..."
-                                       Foreground="#3A5A80" FontSize="13"
+                                       Foreground="#3A5A80" FontSize="15"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
-
-                            <!-- Контент после загрузки -->
                             <StackPanel x:Name="WeatherContent" Visibility="Collapsed">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-
-                                    <!-- Эмодзи погоды -->
                                     <emoji:TextBlock x:Name="WeatherEmoji" Grid.Column="0"
-                                               Text="🌤️" FontSize="48"
-                                               VerticalAlignment="Center" Margin="0,0,14,0"/>
-
-                                    <!-- Температура и описание -->
+                                               Text="🌤️" FontSize="54"
+                                               VerticalAlignment="Center" Margin="0,0,16,0"/>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock x:Name="WeatherTemp"
-                                                   Text="+5°C"
-                                                   FontSize="34" FontWeight="Bold"
-                                                   Foreground="#4FC3F7"
-                                                   FontFamily="Segoe UI"/>
-                                        <TextBlock x:Name="WeatherDesc"
-                                                   Text="Переменная облачность"
-                                                   FontSize="13" Foreground="#CBD5E0"
-                                                   FontFamily="Segoe UI Emoji"/>
-                                        <TextBlock x:Name="WeatherCity"
-                                                   Text=""
-                                                   FontSize="11" Foreground="#3A5A80"
-                                                   FontFamily="Segoe UI"/>
+                                        <TextBlock x:Name="WeatherTemp" Text="+5°C"
+                                                   FontSize="40" FontWeight="Bold"
+                                                   Foreground="#4FC3F7" FontFamily="Segoe UI"/>
+                                        <TextBlock x:Name="WeatherDesc" Text="Переменная облачность"
+                                                   FontSize="15" Foreground="#CBD5E0"/>
+                                        <TextBlock x:Name="WeatherCity" Text=""
+                                                   FontSize="13" Foreground="#3A5A80"/>
                                     </StackPanel>
                                 </Grid>
-
-                                <!-- Детали: ощущается, ветер, влажность -->
                                 <TextBlock x:Name="WeatherDetails"
                                            Text="Ощущается +3°  ·  Ветер 3 м/с  ·  Влажность 72%"
-                                           FontSize="11" Foreground="#3A5A80"
-                                           Margin="0,8,0,0" TextWrapping="Wrap"
-                                           FontFamily="Segoe UI"/>
+                                           FontSize="13" Foreground="#3A5A80"
+                                           Margin="0,8,0,0" TextWrapping="Wrap"/>
                             </StackPanel>
                         </Grid>
                     </Border>
 
-                    <!-- Время, дата и кнопка настроек -->
+                    <!-- Время, дата, настройки -->
                     <StackPanel Grid.Column="3" VerticalAlignment="Center"
-                                HorizontalAlignment="Right" Margin="0,0,0,0">
-                        <Border CornerRadius="14" Padding="22,8" Margin="0,0,0,8"
+                                HorizontalAlignment="Right">
+                        <Border CornerRadius="16" Padding="24,10" Margin="0,0,0,8"
                                 BorderThickness="2">
                             <Border.Background>
-                                <SolidColorBrush Color="#0D1F35"/>
+                                <SolidColorBrush Color="#091728"/>
                             </Border.Background>
                             <Border.BorderBrush>
                                 <SolidColorBrush Color="#2A5298"/>
                             </Border.BorderBrush>
                             <TextBlock x:Name="TimeText" Text="00:00:00"
-                                       Foreground="#4FC3F7" FontSize="42"
+                                       Foreground="#4FC3F7" FontSize="52"
                                        FontWeight="Bold" FontFamily="Consolas"
                                        TextAlignment="Center"/>
                         </Border>
                         <TextBlock x:Name="DateText" Text="понедельник, 1 января 2025"
-                                   Foreground="#8AADD4" FontSize="16"
+                                   Foreground="#7A9DC4" FontSize="18"
                                    TextAlignment="Center" Margin="0,0,0,12"/>
                         <Button x:Name="SettingsButton" Style="{StaticResource SmallButton}"
-                                Click="SettingsButton_Click"
-                                HorizontalAlignment="Right">
+                                Click="SettingsButton_Click" HorizontalAlignment="Right">
                             <Image Source="pack://application:,,,/Images/settings_emoji.png"
-                                   Width="34" Height="34"/>
+                                   Width="38" Height="38"/>
                         </Button>
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <!-- ОСНОВНОЙ КОНТЕНТ -->
-            <Grid Grid.Row="1" Margin="16,14,16,8">
+            <!-- ══════════════ ОСНОВНОЙ КОНТЕНТ ══════════════ -->
+            <Grid Grid.Row="1" Margin="16,12,16,8">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.7*"/>
+                    <ColumnDefinition Width="1.65*"/>
                     <ColumnDefinition Width="1*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- ЛЕВАЯ ЧАСТЬ: 5 кнопок — ряд 1 (3 кнопки) + ряд 2 (2 кнопки) -->
-                <Grid Grid.Column="0" Margin="0,0,12,0">
+                <!-- ЛЕВАЯ ЧАСТЬ: кнопки меню -->
+                <Grid Grid.Column="0" Margin="0,0,10,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Первый ряд: Расписание, Замены, О проекте -->
+                    <!-- Ряд 1: Расписание, Замены, О проекте -->
                     <UniformGrid Grid.Row="0" Columns="3">
 
-                        <!-- Расписание -->
                         <Button x:Name="ScheduleButton"
                                 Style="{StaticResource MainMenuButton}"
                                 Click="ScheduleButton_Click">
                             <Button.Background>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                    <GradientStop Color="#1E4DB7" Offset="0"/>
-                                    <GradientStop Color="#3B82F6" Offset="1"/>
+                                    <GradientStop Color="#1340A0" Offset="0"/>
+                                    <GradientStop Color="#2E6BE6" Offset="1"/>
                                 </LinearGradientBrush>
                             </Button.Background>
-                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                                        Margin="16">
                                 <Image Source="pack://application:,,,/Images/ring.png"
-                                       Width="72" Height="72" Margin="0,0,0,12"/>
+                                       Width="90" Height="90" Margin="0,0,0,14"/>
                                 <TextBlock Text="Расписание" Foreground="White"
-                                           FontSize="22" FontWeight="Bold" TextAlignment="Center"/>
+                                           FontSize="28" FontWeight="Bold"
+                                           TextAlignment="Center"/>
                                 <TextBlock Text="Уроки и классы" Foreground="#BFD9FF"
-                                           FontSize="15" TextAlignment="Center" Margin="0,5,0,0"/>
+                                           FontSize="18" TextAlignment="Center"
+                                           Margin="0,6,0,0"/>
                             </StackPanel>
                         </Button>
 
-                        <!-- Замены -->
                         <Button x:Name="ReplacementsButton"
                                 Style="{StaticResource MainMenuButton}"
                                 Click="ReplacementsButton_Click">
                             <Button.Background>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                    <GradientStop Color="#B45309" Offset="0"/>
-                                    <GradientStop Color="#F59E0B" Offset="1"/>
+                                    <GradientStop Color="#A04010" Offset="0"/>
+                                    <GradientStop Color="#F07020" Offset="1"/>
                                 </LinearGradientBrush>
                             </Button.Background>
-                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                                        Margin="16">
                                 <Image Source="pack://application:,,,/Images/refresh_emoji.png"
-                                       Width="72" Height="72" Margin="0,0,0,12"/>
+                                       Width="90" Height="90" Margin="0,0,0,14"/>
                                 <TextBlock Text="Замены" Foreground="White"
-                                           FontSize="22" FontWeight="Bold" TextAlignment="Center"/>
+                                           FontSize="28" FontWeight="Bold"
+                                           TextAlignment="Center"/>
                                 <TextBlock Text="Изменения сегодня" Foreground="#FEF3C7"
-                                           FontSize="15" TextAlignment="Center" Margin="0,5,0,0"/>
+                                           FontSize="18" TextAlignment="Center"
+                                           Margin="0,6,0,0"/>
                             </StackPanel>
                         </Button>
 
-                        <!-- О проекте -->
                         <Button x:Name="AboutButton"
                                 Style="{StaticResource MainMenuButton}"
                                 Click="AboutButton_Click">
                             <Button.Background>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                    <GradientStop Color="#6D28D9" Offset="0"/>
-                                    <GradientStop Color="#A855F7" Offset="1"/>
+                                    <GradientStop Color="#5B1FA0" Offset="0"/>
+                                    <GradientStop Color="#9B59D0" Offset="1"/>
                                 </LinearGradientBrush>
                             </Button.Background>
-                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                                        Margin="16">
                                 <Image Source="pack://application:,,,/Images/AIhelper.png"
-                                       Width="72" Height="72" Margin="0,0,0,12"/>
+                                       Width="90" Height="90" Margin="0,0,0,14"/>
                                 <TextBlock Text="О проекте" Foreground="White"
-                                           FontSize="22" FontWeight="Bold" TextAlignment="Center"/>
+                                           FontSize="28" FontWeight="Bold"
+                                           TextAlignment="Center"/>
                                 <TextBlock Text="Информация о киоске" Foreground="#EDE9FE"
-                                           FontSize="15" TextAlignment="Center" Margin="0,5,0,0"/>
+                                           FontSize="18" TextAlignment="Center"
+                                           Margin="0,6,0,0"/>
                             </StackPanel>
                         </Button>
 
                     </UniformGrid>
 
-                    <!-- Второй ряд: Карта, Новости — растянуты на 2 колонки каждая -->
+                    <!-- Ряд 2: Карта, Новости -->
                     <UniformGrid Grid.Row="1" Columns="2">
 
-                        <!-- Карта здания -->
                         <Button x:Name="MapBrowserButton"
                                 Style="{StaticResource MainMenuButton}"
                                 Click="MapBrowserButton_Click">
                             <Button.Background>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                    <GradientStop Color="#065F46" Offset="0"/>
-                                    <GradientStop Color="#10B981" Offset="1"/>
+                                    <GradientStop Color="#045A38" Offset="0"/>
+                                    <GradientStop Color="#0EA870" Offset="1"/>
                                 </LinearGradientBrush>
                             </Button.Background>
-                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                                        Margin="16">
                                 <Image Source="pack://application:,,,/Images/map_emoji.png"
-                                       Width="72" Height="72" Margin="0,0,0,12"/>
+                                       Width="100" Height="100" Margin="0,0,0,14"/>
                                 <TextBlock Text="Карта здания" Foreground="White"
-                                           FontSize="22" FontWeight="Bold" TextAlignment="Center"/>
+                                           FontSize="30" FontWeight="Bold"
+                                           TextAlignment="Center"/>
                                 <TextBlock Text="Навигация по школе" Foreground="#D1FAE5"
-                                           FontSize="15" TextAlignment="Center" Margin="0,5,0,0"/>
+                                           FontSize="19" TextAlignment="Center"
+                                           Margin="0,6,0,0"/>
                             </StackPanel>
                         </Button>
 
-                        <!-- Новости -->
                         <Button x:Name="News"
                                 Style="{StaticResource MainMenuButton}"
                                 Click="NewsButton_Click">
                             <Button.Background>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                    <GradientStop Color="#1D4ED8" Offset="0"/>
-                                    <GradientStop Color="#7C3AED" Offset="1"/>
+                                    <GradientStop Color="#1535B8" Offset="0"/>
+                                    <GradientStop Color="#6B20CC" Offset="1"/>
                                 </LinearGradientBrush>
                             </Button.Background>
-                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                                        Margin="16">
                                 <Image Source="pack://application:,,,/Images/newsVK.png"
-                                       Width="72" Height="72" Margin="0,0,0,12"/>
+                                       Width="100" Height="100" Margin="0,0,0,14"/>
                                 <TextBlock Text="Новости" Foreground="White"
-                                           FontSize="22" FontWeight="Bold" TextAlignment="Center"/>
+                                           FontSize="30" FontWeight="Bold"
+                                           TextAlignment="Center"/>
                                 <TextBlock Text="Школьная жизнь" Foreground="#EDE9FE"
-                                           FontSize="15" TextAlignment="Center" Margin="0,5,0,0"/>
+                                           FontSize="19" TextAlignment="Center"
+                                           Margin="0,6,0,0"/>
                             </StackPanel>
                         </Button>
 
                     </UniformGrid>
-
                 </Grid>
 
-                <!-- ПРАВАЯ ЧАСТЬ: Помощник -->
-                <Border Grid.Column="1" CornerRadius="22" ClipToBounds="True" BorderThickness="1.5">
+                <!-- ПРАВАЯ ЧАСТЬ: ИИ-Помощник -->
+                <Border Grid.Column="1" CornerRadius="24" ClipToBounds="True"
+                        BorderThickness="1.5">
                     <Border.Background>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                            <GradientStop Color="#0F2341" Offset="0"/>
-                            <GradientStop Color="#0D1B2A" Offset="1"/>
+                            <GradientStop Color="#0C1E38" Offset="0"/>
+                            <GradientStop Color="#08121F" Offset="1"/>
                         </LinearGradientBrush>
                     </Border.Background>
                     <Border.BorderBrush>
                         <SolidColorBrush Color="#1E4DB7"/>
                     </Border.BorderBrush>
                     <Border.Effect>
-                        <DropShadowEffect Color="#000" Opacity="0.4" BlurRadius="22" ShadowDepth="0"/>
+                        <DropShadowEffect Color="#000" Opacity="0.5"
+                                          BlurRadius="28" ShadowDepth="0"/>
                     </Border.Effect>
 
                     <Grid>
@@ -414,30 +406,34 @@
                         </Grid.RowDefinitions>
 
                         <!-- Заголовок помощника -->
-                        <Border Grid.Row="0" Padding="20,16" CornerRadius="22,22,0,0">
+                        <Border Grid.Row="0" Padding="22,18" CornerRadius="24,24,0,0">
                             <Border.Background>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                    <GradientStop Color="#1E4DB7" Offset="0"/>
-                                    <GradientStop Color="#3B82F6" Offset="1"/>
+                                    <GradientStop Color="#1535B0" Offset="0"/>
+                                    <GradientStop Color="#2E6BE6" Offset="1"/>
                                 </LinearGradientBrush>
                             </Border.Background>
                             <StackPanel Orientation="Horizontal">
                                 <Image Source="pack://application:,,,/Images/AIhelper.png"
-                                       Width="42" Height="42" Margin="0,0,12,0"/>
-                                <TextBlock Text="Помощник" Foreground="White"
-                                           FontSize="24" FontWeight="Bold"
-                                           VerticalAlignment="Center"/>
+                                       Width="48" Height="48" Margin="0,0,14,0"/>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="ИИ-Помощник" Foreground="White"
+                                               FontSize="26" FontWeight="Bold"/>
+                                    <TextBlock Text="Задайте вопрос" Foreground="#BFD9FF"
+                                               FontSize="15"/>
+                                </StackPanel>
                             </StackPanel>
                         </Border>
 
                         <!-- Выбор класса -->
-                        <Border Grid.Row="1" Padding="14,12">
+                        <Border Grid.Row="1" Padding="16,14">
                             <Border.Background>
-                                <SolidColorBrush Color="#0F2341"/>
+                                <SolidColorBrush Color="#0C1E38"/>
                             </Border.Background>
                             <StackPanel>
-                                <TextBlock Text="Выберите класс:" Foreground="#8AADD4"
-                                           FontSize="17" Margin="0,0,0,8"/>
+                                <TextBlock Text="Ваш класс:" Foreground="#7AADD4"
+                                           FontSize="19" FontWeight="SemiBold"
+                                           Margin="0,0,0,8"/>
                                 <ComboBox x:Name="AIClassComboBox"
                                           Style="{StaticResource TouchComboBox}"
                                           SelectionChanged="AIClassComboBox_SelectionChanged"/>
@@ -445,18 +441,18 @@
                         </Border>
 
                         <!-- Контент помощника -->
-                        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto"
-                                      Padding="14,10,6,14">
+                        <ScrollViewer Grid.Row="2"
+                                      VerticalScrollBarVisibility="Auto"
+                                      Padding="14,8,8,14">
                             <StackPanel x:Name="AIContentPanel"/>
                         </ScrollViewer>
 
                     </Grid>
                 </Border>
-
             </Grid>
 
-            <!-- СТРОКА СОСТОЯНИЯ -->
-            <Border Grid.Row="2" Padding="28,10" Background="#0A1628">
+            <!-- ══════════════ СТАТУС-БАР ══════════════ -->
+            <Border Grid.Row="2" Padding="32,10" Background="#060E1A">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -464,11 +460,11 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Name="StatusText" Grid.Column="0"
                                Text="Загрузка данных..."
-                               Foreground="#4A6A8A" FontSize="14"
+                               Foreground="#3A5A80" FontSize="15"
                                VerticalAlignment="Center"/>
                     <TextBlock Grid.Column="1"
                                Text="© RENDERGAMES • Школьный киоск"
-                               Foreground="#2A4A6A" FontSize="13"
+                               Foreground="#243A5A" FontSize="14"
                                VerticalAlignment="Center"/>
                 </Grid>
             </Border>
@@ -476,13 +472,13 @@
         </Grid>
 
         <!-- РЕЖИМ БАННЕРОВ -->
-        <Grid x:Name="BannerGrid" Visibility="Collapsed" Opacity="0" Background="#000000">
+        <Grid x:Name="BannerGrid" Visibility="Collapsed" Opacity="0" Background="#000">
             <Image x:Name="BannerImage" Stretch="Uniform" Opacity="0"/>
             <Border VerticalAlignment="Bottom" HorizontalAlignment="Center"
-                    Margin="0,0,0,40" Padding="30,14" CornerRadius="30"
-                    Background="#80000000">
+                    Margin="0,0,0,50" Padding="36,18" CornerRadius="34"
+                    Background="#90000000">
                 <TextBlock Text="Нажмите в любом месте для продолжения"
-                           Foreground="White" FontSize="22" TextAlignment="Center"/>
+                           Foreground="White" FontSize="26" TextAlignment="Center"/>
             </Border>
             <Button x:Name="ExitBannerButton" Visibility="Collapsed"
                     Click="ExitBannerButton_Click"/>
