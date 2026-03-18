@@ -1,6 +1,6 @@
 ﻿# ============================================================
 #  release.ps1  --  Skript sozdaniya reliza SchoolSchedule
-#  Ispolzovanie: powershell -ExecutionPolicy Bypass -File release.ps1
+#  Ispolzovanie: powershell -ExecutionPolicy Bypass -File release.ps1 ----- powershell -ExecutionPolicy Bypass -File release.ps1
 # ============================================================
 
 param()

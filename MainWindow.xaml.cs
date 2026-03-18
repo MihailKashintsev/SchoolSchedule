@@ -261,11 +261,15 @@ namespace Kiosk
         private void ShowQuestionButtons()
         {
             AIContentPanel.Children.Clear();
+
+            // Приветствие
             AIContentPanel.Children.Add(new Emoji.Wpf.TextBlock
             {
                 Text = "Привет! Чем помочь? 👋",
-                Foreground = Brushes.White, FontSize = 20, FontWeight = FontWeights.Bold,
-                TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 0, 0, 12)
+                Foreground = new SolidColorBrush(Color.FromRgb(160, 196, 255)),
+                FontSize = 19, FontWeight = FontWeights.SemiBold,
+                TextAlignment = TextAlignment.Center,
+                Margin = new Thickness(0, 4, 0, 14)
             });
 
             var questions = new[]
@@ -288,36 +292,24 @@ namespace Kiosk
             var sp = new StackPanel { Orientation = Orientation.Horizontal };
             sp.Children.Add(new Emoji.Wpf.TextBlock
             {
-                Text = emoji, FontSize = 26,
-                Margin = new Thickness(0, 0, 14, 0),
+                Text = emoji, FontSize = 24,
+                Margin = new Thickness(0, 0, 12, 0),
                 VerticalAlignment = VerticalAlignment.Center
             });
             sp.Children.Add(new Emoji.Wpf.TextBlock
             {
-                Text = label, FontSize = 18,
+                Text = label, FontSize = 19,
                 Foreground = Brushes.White,
                 FontWeight = FontWeights.SemiBold,
                 VerticalAlignment = VerticalAlignment.Center
             });
 
-            var innerBorder = new Border
-            {
-                CornerRadius = new CornerRadius(14),
-                Background = new SolidColorBrush(Color.FromRgb(16, 46, 82)),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(30, 77, 183)),
-                BorderThickness = new Thickness(1.5),
-                Padding = new Thickness(16, 14, 16, 14),
-                Child = sp
-            };
-
+            // Используем стиль QuestionBtn из XAML
             var btn = new Button
             {
-                Content = innerBorder,
-                Background = Brushes.Transparent,
-                BorderThickness = new Thickness(0),
-                Margin = new Thickness(0, 0, 0, 10),
-                Cursor = System.Windows.Input.Cursors.Hand,
-                HorizontalContentAlignment = HorizontalAlignment.Stretch
+                Content = sp,
+                Style = (Style)System.Windows.Application.Current.MainWindow.FindResource("QuestionBtn"),
+                HorizontalContentAlignment = HorizontalAlignment.Left
             };
 
             btn.Click += async (s, e) =>
@@ -338,7 +330,7 @@ namespace Kiosk
             AIContentPanel.Children.Add(new Emoji.Wpf.TextBlock
             {
                 Text = "🤔 ИИ думает...",
-                Foreground = new SolidColorBrush(Color.FromRgb(138,173,212)),
+                Foreground = new SolidColorBrush(Color.FromRgb(138, 173, 212)),
                 FontSize = 20, TextAlignment = TextAlignment.Center,
                 Margin = new Thickness(0,20,0,10)
             });
@@ -353,10 +345,19 @@ namespace Kiosk
                 AIContentPanel.Children.Add(new Emoji.Wpf.TextBlock
                 {
                     Text = $"❓ {question}",
-                    Foreground = new SolidColorBrush(Color.FromRgb(138,173,212)),
-                    FontSize = 16, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0,0,0,10)
+                    Foreground = new SolidColorBrush(Color.FromRgb(100, 140, 180)),
+                    FontSize = 16, TextWrapping = TextWrapping.Wrap,
+                    Margin = new Thickness(0, 0, 0, 10)
                 });
-                var ab = new Border { Background = new SolidColorBrush(Color.FromRgb(12,34,58)), CornerRadius = new CornerRadius(12), Padding = new Thickness(12), Margin = new Thickness(0,0,0,10) };
+                var ab = new Border
+                {
+                    Background = new SolidColorBrush(Color.FromRgb(14, 36, 64)),
+                    CornerRadius = new CornerRadius(4, 18, 18, 18),
+                    Padding = new Thickness(16, 12, 16, 12),
+                    Margin = new Thickness(0, 0, 20, 10),
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(26, 60, 100)),
+                    BorderThickness = new Thickness(1)
+                };
                 ab.Child = new Emoji.Wpf.TextBlock { Text = answer, Foreground = Brushes.White, FontSize = 17, TextWrapping = TextWrapping.Wrap, LineHeight = 26 };
                 AIContentPanel.Children.Add(ab);
                 AIContentPanel.Children.Add(MakeBackButton());
@@ -374,12 +375,18 @@ namespace Kiosk
         {
             var btn = new Button
             {
-                Content = new Emoji.Wpf.TextBlock { Text = "← Назад к вопросам", Foreground = Brushes.White, FontSize = 18 },
-                Background = new SolidColorBrush(Color.FromRgb(30,77,183)),
+                Content = new Emoji.Wpf.TextBlock
+                {
+                    Text = "← Назад к вопросам",
+                    Foreground = Brushes.White, FontSize = 18,
+                    HorizontalAlignment = HorizontalAlignment.Center
+                },
+                Background = new SolidColorBrush(Color.FromRgb(18, 50, 128)),
                 BorderThickness = new Thickness(0),
-                Padding = new Thickness(12,8,12,8),
-                Margin = new Thickness(0,4,0,0),
-                Cursor = System.Windows.Input.Cursors.Hand
+                Padding = new Thickness(16, 12, 16, 12),
+                Margin = new Thickness(0, 8, 0, 0),
+                Cursor = System.Windows.Input.Cursors.Hand,
+                HorizontalContentAlignment = HorizontalAlignment.Center
             };
             btn.Click += (s, e) => ShowQuestionButtons();
             return btn;

@@ -1,14 +1,12 @@
 using Kiosk.Models;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
 namespace Kiosk.Services
 {
-    /// <summary>
-    /// Собирает контекст из данных приложения для системного промпта GigaChat.
-    /// </summary>
     public static class AssistantContextBuilder
     {
         public static string Build(
@@ -19,8 +17,11 @@ namespace Kiosk.Services
             DateTime now)
         {
             var sb = new StringBuilder();
-            sb.AppendLine("Ты — школьный ИИ-помощник на информационном киоске. Отвечай коротко, по делу, дружелюбно. Используй эмодзи.");
-            sb.AppendLine($"Сейчас: {now:dddd, d MMMM yyyy, HH:mm}");
+
+            sb.AppendLine("Ты — школьный ИИ-помощник на информационном киоске.");
+            sb.AppendLine("Отвечай коротко, по делу, дружелюбно. Используй эмодзи.");
+            sb.AppendLine("ВАЖНО: отвечай ТОЛЬКО на основе данных ниже. Не придумывай уроки.");
+            sb.AppendLine($"Сейчас: {now.ToString("dddd, d MMMM yyyy, HH:mm", new CultureInfo("ru-RU"))}");
             sb.AppendLine();
 
             // Погода
@@ -30,21 +31,54 @@ namespace Kiosk.Services
                 sb.AppendLine();
             }
 
-            // Расписание для выбранного класса
             if (scheduleData?.Schedules != null && !string.IsNullOrWhiteSpace(selectedClass))
             {
                 var cls = scheduleData.Schedules.FirstOrDefault(s => s.ClassName == selectedClass);
                 if (cls != null)
                 {
-                    var todayLessons = GetTodayLessons(cls, now.DayOfWeek);
-                    sb.AppendLine($"📚 Расписание класса {selectedClass} на сегодня ({DayName(now.DayOfWeek)}):");
-                    if (todayLessons.Any())
+                    // Расписание на всю неделю
+                    sb.AppendLine($"📅 ПОЛНОЕ РАСПИСАНИЕ класса {selectedClass} на неделю:");
+                    sb.AppendLine();
+
+                    var days = new[]
                     {
-                        foreach (var l in todayLessons.OrderBy(x => x.Number))
-                            sb.AppendLine($"  {l.Number}. {l.Time} — {l.Subject}, {l.Teacher}, каб. {l.Classroom}");
+                        (DayOfWeek.Monday,    "Понедельник", cls.Days.Monday),
+                        (DayOfWeek.Tuesday,   "Вторник",     cls.Days.Tuesday),
+                        (DayOfWeek.Wednesday, "Среда",       cls.Days.Wednesday),
+                        (DayOfWeek.Thursday,  "Четверг",     cls.Days.Thursday),
+                        (DayOfWeek.Friday,    "Пятница",     cls.Days.Friday),
+                        (DayOfWeek.Saturday,  "Суббота",     cls.Days.Saturday),
+                    };
+
+                    var tomorrow = now.AddDays(1).DayOfWeek;
+
+                    foreach (var (dow, name, lessons) in days)
+                    {
+                        var marker = dow == now.DayOfWeek ? " ← СЕГОДНЯ"
+                                   : dow == tomorrow      ? " ← ЗАВТРА"
+                                   : "";
+                        sb.AppendLine($"  {name}{marker}:");
+
+                        if (lessons == null || !lessons.Any())
+                        {
+                            sb.AppendLine("    Уроков нет.");
+                        }
+                        else
+                        {
+                            foreach (var l in lessons.OrderBy(x => x.Number))
+                            {
+                                var cab = string.IsNullOrWhiteSpace(l.Classroom) || l.Classroom == "-"
+                                    ? "" : $", каб. {l.Classroom}";
+                                var teacher = string.IsNullOrWhiteSpace(l.Teacher)
+                                    ? "" : $", {l.Teacher}";
+                                sb.AppendLine($"    {l.Number}. {l.Time} — {l.Subject}{teacher}{cab}");
+                            }
+                        }
+                        sb.AppendLine();
                     }
-                    else
-                        sb.AppendLine("  Уроков нет.");
+
+                    // Текущий статус
+                    sb.AppendLine(GetCurrentStatus(cls, now));
                     sb.AppendLine();
                 }
             }
@@ -75,24 +109,14 @@ namespace Kiosk.Services
                 }
             }
 
-            // Текущий статус (идёт урок / перемена)
-            sb.AppendLine(GetCurrentStatus(scheduleData, selectedClass, now));
-
             return sb.ToString();
         }
 
-        private static string GetCurrentStatus(ScheduleData scheduleData, string selectedClass, DateTime now)
+        private static string GetCurrentStatus(ClassSchedule cls, DateTime now)
         {
-            if (scheduleData?.Schedules == null || string.IsNullOrWhiteSpace(selectedClass))
-                return "";
-
-            var cls = scheduleData.Schedules.FirstOrDefault(s => s.ClassName == selectedClass);
-            if (cls == null) return "";
-
-            var lessons = GetTodayLessons(cls, now.DayOfWeek);
+            var lessons = GetLessonsForDay(cls, now.DayOfWeek);
             var t = now.TimeOfDay;
 
-            // Звонки
             var bells = new Dictionary<int, (TimeSpan Start, TimeSpan End)>
             {
                 { 1, (new TimeSpan(8,30,0),  new TimeSpan(9,15,0)) },
@@ -121,33 +145,22 @@ namespace Kiosk.Services
                 if (t < bell.Start)
                 {
                     var rem = bell.Start - t;
-                    return $"☕ Сейчас перемена. Следующий урок: {l.Number} ({l.Subject}) через {(int)rem.TotalMinutes} мин.";
+                    return $"☕ Сейчас перемена. Следующий: {l.Number} урок ({l.Subject}) через {(int)rem.TotalMinutes} мин.";
                 }
             }
 
             return "🎉 Уроки на сегодня завершены.";
         }
 
-        private static List<Lesson> GetTodayLessons(ClassSchedule cls, DayOfWeek day) => day switch
+        private static List<Lesson> GetLessonsForDay(ClassSchedule cls, DayOfWeek day) => day switch
         {
-            DayOfWeek.Monday    => cls.Days.Monday,
-            DayOfWeek.Tuesday   => cls.Days.Tuesday,
-            DayOfWeek.Wednesday => cls.Days.Wednesday,
-            DayOfWeek.Thursday  => cls.Days.Thursday,
-            DayOfWeek.Friday    => cls.Days.Friday,
-            DayOfWeek.Saturday  => cls.Days.Saturday,
+            DayOfWeek.Monday    => cls.Days.Monday    ?? new List<Lesson>(),
+            DayOfWeek.Tuesday   => cls.Days.Tuesday   ?? new List<Lesson>(),
+            DayOfWeek.Wednesday => cls.Days.Wednesday ?? new List<Lesson>(),
+            DayOfWeek.Thursday  => cls.Days.Thursday  ?? new List<Lesson>(),
+            DayOfWeek.Friday    => cls.Days.Friday    ?? new List<Lesson>(),
+            DayOfWeek.Saturday  => cls.Days.Saturday  ?? new List<Lesson>(),
             _ => new List<Lesson>()
-        };
-
-        private static string DayName(DayOfWeek d) => d switch
-        {
-            DayOfWeek.Monday    => "понедельник",
-            DayOfWeek.Tuesday   => "вторник",
-            DayOfWeek.Wednesday => "среда",
-            DayOfWeek.Thursday  => "четверг",
-            DayOfWeek.Friday    => "пятница",
-            DayOfWeek.Saturday  => "суббота",
-            _ => "воскресенье"
         };
     }
 }
